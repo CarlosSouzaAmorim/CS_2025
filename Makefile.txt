@@ -3,13 +3,13 @@ ldflags=-lbu
 
 .PHONY: all clean
 
-all: clean PROJECTNAME
+all: clean ks
 
-PROJECTNAME: PROJECTNAME.o
+PROJECTNAME: ks.o
 	cc $(flags) $^ -o $@ $(ldflags)
 
-PROJECTNAME.o: PROJECTNAME.c PROJECTNAME.h
+ks.o: ks.c ks.h
 	cc $(flags) -c $<
 
 clean:
-	rm -f *.o PROJECTNAME
+	rm -f *.o ks
