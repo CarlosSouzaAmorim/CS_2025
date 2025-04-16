@@ -1,0 +1,26 @@
+1- Escreva um programa que indique quantos segundos tem um determinado número de horas.
+2- Altere o programa anterior de tal forma que permita indicar, a partir de um determinado número de horas, quais os minutos, os segundos ou mesmo os décimos de segundo que esse número de horas contém.
+3- Resolva o mesmo enunciado utilizando um switch.
+4- Resolva o mesmo enunciado utilizando um switch, mas sem qualquer break. Suponha que o número de horas está corretamente escrito
+5- Escreva um programa, de quatro formas distintas, que leia um inteiro e indique se esse inteiro é ou não igual a zero.
+6- Escreva um programa que verifique se um ano é bissexto ou não.
+7- Escreva um programa que leia uma data e verifique se esta é válida ou não.
+
+
+Entregar HOJE (15-04)
+
+Lista III entrega até sábado até 23h59
+
+7)  28 dias: fevereiro
+    30 dias:    abril
+                Junho
+                Setembro
+    31 dias:    demais meses
+
+5) são 4 exercícios
+    5.1
+    5.2
+    5.3
+    5.4
+
+2) solução com if-else
