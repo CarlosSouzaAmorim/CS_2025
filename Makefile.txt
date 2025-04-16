@@ -1,0 +1,15 @@
+flags=-O2 -Wall -std=c2x
+ldflags=-lbu
+
+.PHONY: all clean
+
+all: clean ks
+
+PROJECTNAME: ks.o
+	cc $(flags) $^ -o $@ $(ldflags)
+
+ks.o: ks.c ks.h
+	cc $(flags) -c $<
+
+clean:
+	rm -f *.o ks
