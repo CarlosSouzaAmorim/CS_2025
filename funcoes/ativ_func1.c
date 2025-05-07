@@ -4,7 +4,8 @@ Escreva a função x_isdigit, que verifica se um determinado caractere é dígit
 
 */
 int func_testa_digito(char char1){
-    //teste na tabela ASCII
+    //esta função retorna verdadeiro se o caractere for um dígito
+    //teste na tabela ASCII python3
 
 /*
 >>> ord("0")
@@ -15,6 +16,7 @@ int func_testa_digito(char char1){
 56
 >>> 
 */
+    //testa se o caractere esta entre 48 e 57:
     return ( char1 >= '0' && char1 <= '9');
 }
 
@@ -22,12 +24,20 @@ int main (int argc, char *argv[])
 {
     char char1;
     printf("TESTA SE CARACTERE É DÍGITO\n\n");
+    printf("Digite um caractere apra testar:");
 
     scanf("%c",&char1);
 
-    printf("A FUNCAO TESTA DIGITO RETORNOU: %d \n\n", func_testa_digito(char1));
+    printf("A FUNCÃO TESTA DIGITO RETORNOU: %d \n\n", func_testa_digito(char1));
 
+    if (func_testa_digito(char1)){
+        printf("O CARACTERE %c É UM DÍGITO\n", char1);
+    }
+    else{
+        printf("O CARACTERE %c NÃO É UM DÍGITO\n", char1);
+    }
 
+    printf ("\n\nFim!\n\n");
     
     return 0;
 }

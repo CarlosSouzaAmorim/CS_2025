@@ -11,7 +11,13 @@ x0 =1.0
 xn = x*x* ... *x (n vezes)
 */
 
-
+/*
+Implemente a função 
+float Pot(float x, int n) 
+Devolve o valor de xn
+x0 =1.0 
+xn = x*x* ... *x (n vezes)
+*/
 /*
 4 Implemente a função 
 
@@ -23,7 +29,15 @@ Abs(5)	→ 5
 
 
 */
-x = x / exponente_n(1 + t);
+
+int Abs(int x) {
+    if (x < 0) {
+        return -x;
+    } else {
+        return x;
+    }
+}
+//x = x / exponente_n(1 + t);
 
 
 
