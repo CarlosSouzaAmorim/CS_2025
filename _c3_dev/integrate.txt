@@ -1,0 +1,9 @@
+
+
+integrate (F/(M-((F*t)/(i*g)))) dt from t=0 to t
+
+integrate (F/(M-((F*t)/(s*g)))) dt from t=0 to t
+
+integrate (F/(M-((F*t)/(s*g)))) dt
+
+integral F/(M - (F t)/(s g)) dt = -g s log(g M s - F t) + constant (assuming a complex-valued logarithm)

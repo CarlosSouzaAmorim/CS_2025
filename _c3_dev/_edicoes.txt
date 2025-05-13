@@ -1,0 +1,27 @@
+745	HEIGT
+749     HEIGT
+
+ERRO DE ALTURA MINIMA : 24
+MSG: altura insuficiente [24] min[25
+MSG: CHECK L MIN:
+
+351:  t:h[ para  t:w[
+374: CHECK L MIN: PARA CHECK H MIN:
+
+TELA : ==========================================================================
+ATENCAO: CHECK L MIN:[altura_min_terminal]: [25 t:h[24]
+ATENCAO: CHECK L MIN:[altura_min_terminal]: [25 t:h[24]
+ATENCAO: CHECK L MIN:[altura_min_terminal]: [25 t:h[24]
+debug: PRINT_BIG_ERROR_CLS: vai limpar a tela: wait 5...
+
+                        altura insuficiente [24] min[25
+TELA : ==========================================================================
+
+
+
+L34: global 		debug_level_trace			is TRUE.  TO FALSE
+L99: if (debug_prog_AVISA_INICIO_SOM) {TOQUE_7_NATION_INTRO().}. PARA TOQUE_2
+
+TELA : ==========================================================================
+Undefined Variable Name 'v0'.                                |                     /  |                    At 1:/c3_song.ksm, line 77                                   |                     /  |                    Called from 1:/c3.ksm, line 99 
+TELA : ==========================================================================

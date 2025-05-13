@@ -1,0 +1,192 @@
+--------------------------------------------------------------------------------------------------------------------------------
+PASSO A PASSO 23042020:
+	CARREGAR SEÇAÕ: ABRIR __BATS_ORG_PROJETO.SECAO
+	LER _LEIAME.TXT
+	
+	anotar pasta de execução e edição dos bat: 
+		pasta: 			C:\_O_HDN2\OneDrive\_GAMES\KSP\_c3_dev
+		pc edita/copia: \\NOTE-POS-HDN2
+		pc game:		\\HDNBIG-W7-PC
+		pasta game:		\\Hdnbig-w7-pc\_nao_quero\___EXCLUIR\Kerbal Space Program Breaking Ground MULTi9\Ships\Script
+		versão do game:	1.7.3.2594
+		versão do KOS:	kOS v1.1.9.0
+		IP DO TELNET K:	192.168.1.109
+		
+	execute : cp3_test.bat
+		irá checar pelas configs atuais
+		se não encontrar irá pedir para preencher um slot de config
+			NOMEAR SLOT CONFORME A VERSAO DO KSP
+	
+	PREPARAR UMA NAVE
+		CRIAR UMA NAVE COM UM KOS PROCESSOR (presente em qualquer KOS part)
+			o tamanho é importante se for necessário compilar: VERIFICAR QUANTOS BYTES
+				teste com ks e ksm juntos.
+				espaco tot = 1020000 ; espaco rest = 519925. espaco ocupado = 500075
+			modificar o arquivo da nave
+		NOMEAR O KOS PROCESSOR NAME TAG
+			o volume(1) do processor ficará com este nome ao iniciar pelo boot
+		
+	
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+------------------------
+TENTANDO RELEMBRAR O QUE CADA ARQUIVO FAZ:
+
+ATENÇÃO: VER "_SOBRE OS ARQUIVOS.txt"_
+
+_ARQUIVOS_DO_PROJETO.txt
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+NO EDITOR NOTEPAD++ USAR TEMA 
+> CONFIGURADOR DE ESTILOS > DEEP BLACK
+
+COM A LINGUAGEM C FICARA BOM
+  tem os agrupadores de codigo
+--------------------------------------------------------------------------------------------------------------------------------
+NO PC QUE EDITA:
+pegar o caminho desses arquivos: ex: C:\_O_HDN2\OneDrive\_GAMES\KSP\_c3_dev
+pegar o caminho do game: ex: \\HDNLIL-W10-PC\ksp\Ships\Script
+
+	em [cp3_test.bat]:
+	colar na linha: [4] e 5 
+[  4] SET CONF_FILE="D:\GOG Games\_c3_dev\cp3_config2.bat"
+[  5] SET COPY_PROG="D:\GOG Games\_c3_dev\cp3_test.bat"	
+	
+[178] set CAMINHO_ORIGEM=\\Note-sim-w10\gog games\
+[179] set CAMINHO_DESTINO=C:\KSP 1.2.0.1586\Ships\Script\
+
+	em [cp3_config2.bat]: criar novo goto para este perfil:
+[ 34] GOTO C3_EDIT_HDN2_PLAY_HDNbig_MH	
+[ 76] :C3_EDIT_HDN2_PLAY_HDNbig_MH
+[ 77] set CAMINHO_ORIGEM=D:\GOG Games\_c3_dev\
+[ 78] set CAMINHO_DESTINO=\\USER-PC\_n_w7_2_big\Kerbal Space Program Making History\Ships\Script\
+
+	em [cp3_MK_VER.bat]:
+[ 71] SET CONF_FILE="\\NOTE-SIM-W10\GOG Games\_c3_dev\cp3_config2.bat"
+[ 72] SET COPY_PROG="\\NOTE-SIM-W10\GOG Games\_c3_dev\cp3_test.bat"	
+
+[213] set CAMINHO_ORIGEM=\\Note-sim-w10\gog games\
+[214] set CAMINHO_DESTINO=C:\KSP 1.2.0.1586\Ships\Script\
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+NO PC QUE COPIA:
+ (pode ser outro terceiro pc até, cuidado nas configs):
+	cmd: cp3_test.bat
+--------------------------------------------------------------------------------------------------------------------------------
+NO KSP:						ver o porque disso
+	start on the archive
+--------------------------------------------------------------------------------------------------------------------------------
+NO kOS DA NAVE:				isto garante que o programa editado seja recompilado
+	runpath("cp.ks").
+	
+--------------------------------------------------------------------------------------------------------------------------------
+AO CRIAR NOVO MODULO:
+c3_ship.ks
+
+NO C3.KS:
+	runoncepath("c3_ship"). //OBSERVE SEM A EXTENSAO
+NO cp3_test.bat: 
+	call %COPY_PROG% COMPARA_COPIA c3_ship.ks
+NO cp3_MK_VER.bat:
+    COPY c3_ship.ks %VERSAO_SALVAR%    
+NO CP.KS:
+	modulos_c3:add("c3_ship.ks").
+NO C3_SHIP.KS:
+	@LAZYGLOBAL OFF.
+	//c3_ship.ks
+
+	//uses: BLAH
+	runoncepath("c3_init_vars").
+
+	// ====    FUNCOES PARA CONTROLE DA NAVE ============================================================================
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+AO CRIAR NOVO COMANDO:
+em c3_cmd: em process_commands: 
+    CRIAR NOVO: NOME_CMD_OQFAZ E CHAMAR FUNCAO CORRESPONDENTE OU APLICAR CONFIG
+		if (COMANDO_EXTRAIDO[0] = (NOME_CMD_OQFAZ) )
+				{FAZ_OQFAZ.}.
+
+		if (COMANDO_EXTRAIDO[0] = (NOME_CMD_HELP) )
+			{	MOSTRA_MENU(MENU_AJUDA).
+				if (debug_process_cmd){
+							DEBUG(NOME_DA_FUNC,"COMANDOS RECONHECIVEIS:").
+							DEBUG(NOME_DA_FUNC,"OQFAZ").
+							DEBUG(NOME_DA_FUNC,NOME_CMD_OQFAZ).
+em c3_menu: MOSTRA_MENU:
+	if (menu_exibido = MENU_AJUDA){		
+		MOSTRA_MENU_OPCOES( "COMANDOS BASICOS2", "",
+							NOME_CMD_OQFAZ, "",
+							DEF_CMD_TRUE, "for TRUE",
+
+                            
+em c3_init_vars: em FUNCTION INIT_VARS_LINHA_DO_PROMPT:
+	global NOME_CMD_OQFAZ 	is "OQFAZ".
+
+em EXTRAI_COMANDO(): 
+    if (((extract_prim_str_cmd)="OQFAZ") or ((extract_prim_str_cmd) = "oqfaz") or ((extract_prim_str_cmd) = NOME_CMD_OQFAZ)){resultados_extrai_cmd:add(NOME_CMD_OQFAZ).}.
+    
+
+--- PROCESSAMENTO DE COMANDOS --------------------------------------------------------------------------------------------------
+
+>>PELA INICIALIZACAO:
+c3 modo_de_execucao                                         : padrao "run_normal"
+    LOOP_PROG_PRINCIPAL(MEU_PROG, modo_de_execucao).        : modo_de_execucao PODE SER AG 0 A 9 no mode_debug ativado
+        until (sair_programa){
+            WHEN (terminal:input:haschar)
+                PROCESS_KEYBOARD(terminal:input:getchar()).
+        }
+	
+FUNCTION PROCESS_KEYBOARD{		//DECIDE O QUE FAZER COM O "CARACTER_PEGADO" > process_commands() OU process_more_char().
+    if (CARACTER_PEGADO = terminal:input:RETURN){	//para confirmacao de comandos com ENTER (atualiza menu)
+		process_commands().
+		MOSTRA_MENU(MENU_ultimo_exibido, True).//para atualizar o menu	
+	process_more_char(CARACTER_PEGADO). //para entrada de instrucoes 
+	process_one_char(CARACTER_PEGADO). //para seleção de opcoes
+
+function process_one_char{                                  //para seleção de opcoes
+	print_stat(tprintcar,caracter,contador_car).}.
+function process_more_char{                                 //para entrada de instrucoes 
+	set linha_digitada_no_prompt to linha_digitada_no_prompt + caracter.
+	print_stat(tprintCMD,CONCAT_STR_A(linha_digitada_no_prompt,larg_max_car),contador_CMD).//isso esta apagando tudo toda vez: diminuir o delay FAZER
+	}.
+    
+	
+function process_commands{		                            //para confirmacao de comandos > EXTRAI_COMANDO > COMANDO_EXTRAIDO > NOME_CMD_IPU
+    set COMANDO_EXTRAIDO to EXTRAI_COMANDO(comandinho_digitado_modafoca).
+    if (COMANDO_EXTRAIDO[0] = (NOME_CMD_IPU) )              : IDENTIFICA PRIMEIRA PARTE
+		set CONFIG_DEF_IPU to COMANDO_EXTRAIDO[1].          : EXTRAI INFORMACAO SE NECESSARIO
+    
+function EXTRAI_COMANDO{		                            //PARA RECONHECIMENTO DE DIVERSAS STRINGS: abort, putz, morrediabo...
+    set listinha_2_de_comandos to extract_COMANDOS_CMD(LINHA_COM_CMD).
+    if (	((extract_prim_str_cmd) = "abort")		or      :reconhece primeiro parametro
+		((extract_prim_str_cmd) = "putz") 			or
+		((extract_prim_str_cmd) = NOME_CMD_ABORT) 	)
+            {resultados_extrai_cmd:add(NOME_CMD_ABORT).}.    
+	if (    ((extract_sec_str_cmd = "sim"))     or          :reconhece SEGUNDO parametro
+        ((extract_sec_str_cmd = "yes"))         or 
+        ((extract_sec_str_cmd = DEF_CMD_TRUE))  or 
+        ((extract_sec_str_cmd = "ligar")) )
+            {resultados_extrai_cmd:add(DEF_CMD_TRUE).}.		
+
+function extract_COMANDOS_CMD{	                            //processa toda a string enviada e separa as palavras
+	local CARACTERES_PERMITIDOS_CMD is "abcdefghijklmnopqrstuvwxyz1234567890+-*/[]()#$%@:;.,?!<>_".
+	return lista_de_comandos_encontrados.}.    
+    
+--- PROCESSAMENTO DE COMANDOS FIM ----------------------------------------------------------------------------------------------
+
+
+
+PROBLEMAS CABELUDOS EVITAR:
+
+// ATENCAO ATENCAO FOI RESOLVIDO UM MBAITA PROBLEMA LIGANDO O LOCK DO THROTTLE A UMA VARIAVEL GLOBAL
+
+
+
+    

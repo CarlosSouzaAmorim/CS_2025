@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<!-- saved from url=(0028)https://ss64.com/nt/set.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=768, initial-scale=1">
+<link rel="STYLESHEET" href="./Set - Environment Variable - Windows CMD - SS64.com_files/main.css" type="text/css">
+<link rel="STYLESHEET" href="./Set - Environment Variable - Windows CMD - SS64.com_files/tables.css" type="text/css">
+<title>Set - Environment Variable - Windows CMD - SS64.com</title>
+<link rel="preload" href="./Set - Environment Variable - Windows CMD - SS64.com_files/f.txt" as="script"><script src="./Set - Environment Variable - Windows CMD - SS64.com_files/osd.js.download"></script><script type="text/javascript" src="./Set - Environment Variable - Windows CMD - SS64.com_files/f.txt"></script><link rel="preload" href="./Set - Environment Variable - Windows CMD - SS64.com_files/f(1).txt" as="script"><script type="text/javascript" src="./Set - Environment Variable - Windows CMD - SS64.com_files/f(1).txt"></script><link rel="preload" href="https://pagead2.googlesyndication.com/pagead/js/r20190826/r20190131/show_ads_impl.js" as="script"></head><body><!-- #BeginLibraryItem "/Library/head_nt.lbi" --><div id="tnav"><ul>
+<li class="tbtn"><a href="https://ss64.com/"> ( &nbsp;SS64 &nbsp;)</a></li>
+<li class="tbtn"><a href="https://ss64.com/nt">CMD</a></li>
+<li class="tbtn"><a href="https://ss64.com/nt/syntax.html">Syntax</a></li>
+<li><div id="search"><form action="https://www.google.com/search" method="get">
+<input type="text" name="q" id="q" size="27" maxlength="255">
+<input class="submit" value="Search" id="btn" type="submit">
+<input type="hidden" name="sitesearch" value="ss64.com/nt/"></form></div></li>
+</ul></div><!-- #EndLibraryItem --><h1>SET</h1> 
+<p>Display, set, or remove CMD environment variables. Changes made with SET will remain only for the duration of the current 
+  CMD session.</p>
+<pre>Syntax
+      SET <i>variable</i>
+      SET <i>variable</i>=<i>string</i>
+      SET "<i>variable</i>=<i>string</i>"
+      SET "<i>variable</i>="
+
+      SET /A <i>"variable</i>=<i>expression</i>"
+      SET /P <i>variable</i>=[<i>promptString</i>]
+      SET "
+
+Key
+   <i>variable</i>    : A new or existing environment variable name e.g. _num
+   <i>string</i>      : A text string to assign to the variable.
+
+   <i>expression</i>  : Arithmetic expression
+   /A          : see full details of Arithmetic expressions <a href="https://ss64.com/nt/set.html#expressions">below</a>.</pre>
+<p>Variable names are not case sensitive but the contents can be.</p>
+<p>It is  good practice to avoid using any <a href="https://ss64.com/nt/syntax-esc.html#delimiters">delimiter</a> characters (spaces, commas etc) in the variable <i>name</i>.<br>
+Any extra spaces around either the variable name or the <i>string</i>, will <b>not</b> be ignored, SET is not forgiving of extra spaces like many other scripting languages.</p>
+<p>The first character of the name must <a href="https://ss64.com/nt/syntax-percent.html">not be numeric</a>. It is a common practice to prefix variable names with either an undescore or a dollar sign <span class="code">_variable</span> or <span class="code">$variable</span>, these prefixes are not required but help to prevent any confusion with the standard built-in <a href="https://ss64.com/nt/syntax-variables.html">Windows Environment variables</a> or any other other command strings.</p>
+<h2>Display  a variable:</h2>
+<blockquote>
+<p>In most contexts, surround the variable <i>name</i> with <span class="code">%</span>'s and the variable's <i>value</i> will be used <br>
+e.g. To display the value of the<span class="code"> _department</span> variable with the
+ECHO command: <span class="code"><br>
+ECHO %_department%</span></p>
+<p>If the variable name is not found in the current environment then SET will set %ERRORLEVEL% to 1  .<br>
+This can be detected using  <a href="https://ss64.com/nt/if.html">IF</a> ERRORLEVEL ...</p>
+<p>Including extra characters can be useful to show any white space:<br>
+<span class="code">ECHO [%_department%</span>]<br>
+<span class="code">ECHO "%_department%</span>"<br>
+</p>
+<p>Type SET without parameters to display all the current environment variables.<br>
+<br>
+Type SET with a variable name to display that variable <span class="code"><br>
+SET _department</span><br>
+<br>
+The SET command invoked with a string (and no equal sign) will display a wildcard list of all matching variables<br>
+<br>
+Display variables that begin with 'P': <span class="code"><br>
+SET p</span><br>
+Display variables that begin with an underscore <span class="code"><br>
+SET _ </span></p>
+</blockquote>
+<h2>Set a variable:</h2>
+<blockquote>
+<p>Example of storing a text string:<br>
+<br>
+<span class="code">C:\&gt; SET _dept=Sales and Marketing<br>
+C:\&gt; set _ <br>
+_dept=Sales and Marketing</span></p>
+<p>Set a variable that contains a <a href="https://ss64.com/nt/syntax-redirection.html">redirection</a> character, note the position of the quotes which are not saved:</p>
+<p class="code">SET "_dept=Sales &amp; Marketing"</p>
+<p> One variable can be based on another, but this is not dynamic<br>
+E.g.</p>
+<p class="code">C:\&gt; set xx=fish<br>
+C:\&gt; set msg=%xx% chips<br>
+C:\&gt; set msg<br>
+msg=fish chips</p>
+<p class="code">C:\&gt; set xx=sausage<br>
+C:\&gt; set msg<br>
+msg=fish chips</p>
+<p class="code">C:\&gt; set msg=%xx% chips<br>
+C:\&gt; set msg<br>
+msg=sausage chips</p>
+<p>Avoid starting variable names with a  number,  this will avoid the variable being mis-interpreted as a <a href="https://ss64.com/nt/syntax-args.html">parameter</a><br>
+<span class="code">%123_myvar% &lt; &gt; %1 23_myvar</span><br><br>
+To display undocumented system variables:</p>
+<pre>   SET "</pre>
+</blockquote>
+<h2>Values with Spaces - using Double Quotes</h2>
+<blockquote>
+<p>There is no need to add quotation marks when assigning a value that includes spaces</p>
+<p class="code">SET _variable=one  two three</p>
+<p>For special characters like<span class="code"> &amp; </span>you can surround the entire expression with quotation marks.<br>
+The variable contents will <b>not </b>include the surrounding quotes:</p>
+<p class="code">SET <b>"</b>_variable=one &amp; two<b>"</b></p>
+<p>If you place  quotation marks around the value, then those quotes will be stored:</p><p class="code">SET _variable=<b>"</b>one &amp; two<b>"</b></p>
+</blockquote>
+<h2>Variable names with spaces</h2>
+<blockquote>
+<p> A variable can contain spaces and also the variable name itself can contain spaces,
+therefore the following assignment:<br>
+<span class="code">SET _var =MyText</span><br>
+will create a variable called <span class="code">"_var "</span> - note the trailing space</p>
+</blockquote>
+<h2>Prompt for user input</h2>
+<blockquote>
+<p>The <span class="code">/P</span> switch allows you to set a variable equal to a line of input entered by the user. <br>
+The Prompt string is displayed before the user input is read.</p>
+<pre>@echo off
+Set /P _dept=Please enter Department || Set _dept=NothingChosen<br>If "%_dept%"=="NothingChosen" goto sub_error<br>If /i "%_dept%"=="finance" goto sub_finance<br>If /i "%_dept%"=="hr" goto sub_hr
+goto:eof
+
+:sub_finance
+echo You chose the finance dept
+goto:eof
+
+:sub_hr
+echo You chose the hr dept<br>goto:eof
+
+:sub_error
+echo Nothing was chosen</pre>
+<p> The Prompt string can be empty. If the user does not enter anything (just presses return) then the variable will be unchanged and an errorlevel will be set to 1.</p>
+<p>The <a href="https://ss64.com/nt/choice.html">CHOICE</a> command is an alternative to <span class="code">SET /P</span> (but  CHOICE accepts only one character/keypress.)<br>
+</p>
+</blockquote>
+<h2>Place the first line of a file into a variable:</h2>
+<blockquote>
+<p class="code">Set /P _MyVar=&lt;MyFilename.txt<br>
+Echo %_MyVar%</p>
+<p>In early versions of CMD, any carriage returns/new lines (CR+LF) before the first line containing text were ignored.</p>
+<p>The second and any subsequent lines of text in the file will be discarded.</p>
+</blockquote>
+<h2>Delete a variable</h2>
+<blockquote>
+<p>Type SET with just the variable name and an equals sign:<br>
+<br>
+<span class="code">SET _department=</span><br>
+<br>
+Better still, to be sure there is no trailing space after the = place the expression in parentheses or quotes:<br>
+<span class="code">(SET _department=)<br>
+&nbsp;&nbsp;or<br>
+SET "_department="</span></p>
+</blockquote>
+<h2><a name="expressions" id="expressions"></a>Arithmetic expressions (SET /a)</h2>
+<blockquote>
+<p>Placing expressions in "quotes" is optional for simple arithmetic but required for any expression using logical operators.</p>
+<p>When refering to a variable in your expression, SET /A allows you to omit the %'s so <span class="code">_myvar</span> instead of <span class="code">%_myvar%</span></p>
+<p>Any SET /A calculation that returns a fractional result will be rounded down to the nearest whole integer.</p>
+<p> The expression to be evaluated can include the following operators:</p>
+<pre>   +   Add                set /a "_num=_num+5"
+   +=  Add variable       set /a "_num+=5"
+   -   Subtract           set /a "_num=_num-5"
+   -=  Subtract variable  set /a "_num-=5"
+   *   Multiply           set /a "_num=_num*5"
+   *=  Multiply variable  set /a "_num*=5"
+   /   Divide             set /a "_num=_num/5"
+   /=  Divide variable    set /a "_num/=5"
+   %%  <a href="https://en.wikipedia.org/wiki/Modulo_operation">Modulus</a>            set /a "_num=17%%5"
+   %%= Modulus            set /a "_num%%=5"
+   !   Logical negation  0 (FALSE) ⇨ 1 (TRUE) and any non-zero value (TRUE) ⇨ 0 (FALSE)
+   ~   Bitwise invert
+   &amp;   AND                set /a "_num=5&amp;3"    0101 <a href="https://en.wikipedia.org/wiki/Bitwise_operation">AND</a> 0011 = 0001 (decimal 1)
+   &amp;=  AND variable       set /a "_num&amp;=3"
+   |   OR                 set /a "_num=5|3"    0101 <a href="https://en.wikipedia.org/wiki/Bitwise_operation">OR</a> 0011 = 0111 (decimal 7)
+   |=  OR variable        set /a "_num|=3"
+   ^   XOR                set /a "_num=5^3"    0101 <a href="https://en.wikipedia.org/wiki/Bitwise_operation">XOR</a> 0011 = 0110 (decimal 6)
+   ^=  XOR variable       set /a "_num=^3"
+   &lt;&lt;  Left <a href="https://en.wikipedia.org/wiki/Logical_shift">Shift</a>.    (sign bit ⇨ 0) An arithmetic shift.
+   &gt;&gt;  Right <a href="https://en.wikipedia.org/wiki/Logical_shift">Shift</a>.   (Fills in the sign bit such that a negative number always remains negative.)
+                       Neither ShiftRight nor ShiftLeft will detect overflow.
+   &lt;&lt;= Left Shift variable     set /a "_num&lt;&lt;=2"
+   &gt;&gt;= Right Shift variable    set /a "_num&gt;&gt;=2"
+
+  ( )  Parenthesis group expressions  set /a "_num=(2+3)*5"
+   ,   Commas separate expressions    set /a "_num=2,_result=_num*5"
+</pre>
+<p> If a variable name is specified as part of the expression, but is not defined in the current environment, then SET /a will use a value of 0.</p>
+<p>In a batch script, the Modulus operator (%) must always be <a href="https://ss64.com/nt/syntax-percent.html">doubled up</a> to (%%). </p>
+<p>SET /A arithmetic shift operators do not detect overflow which can cause problems for any non-trivial math, e.g. the bitwise invert often incorrectly reverses the  + / - sign of the result.<br>
+<br>
+See <a href="https://ss64.com/nt/set.html#expressions">SET /a examples</a> below and <a href="https://ss64.org/viewtopic.php?id=1649">this forum thread</a> for more.<br>
+also see <a href="https://ss64.com/nt/setx.html">SetX</a>, <a href="https://ss64.com/nt/syntax-replace.html">VarSearch</a> and <a href="https://ss64.com/nt/syntax-substring.html">VarSubstring</a> for more on variable manipulation.</p>
+<p><b>Examples: </b></p>
+<p class="code">SET /A "_result=2+4"<br>
+(=6)<br>
+<br>
+SET /A "_result=5"<br>
+(=5)<br>
+SET /A "_result<b>+=</b>5"<br>
+(=10)<br>
+<br>
+SET /A "_result=2<b>&lt;&lt;</b>3"<br>
+(=16)   { 2 Lsh 3 = binary 10 Lsh 3 = binary 10000 = decimal 16 }<br>
+<br>
+SET /A "_result=5<b>%%</b>2"<br>
+(=1)    { 5/2 = 2 + 2 remainder 1 = 1 }<br>
+<br>
+SET /A "_var1=_var2=_var3=10"<br>
+(sets 3 variables to the same value - undocumented syntax.)</p>
+<p>SET /A will treat any character string in the expression 
+as an environment variable name. This allows you to do arithmetic with environment 
+variables without having to type any % signs to get the values. <span class="code">SET /A _result=5 + _MyVar</span></p>
+<p>Multiple calculations can be performed in one line, by separating each calculation with commas, for example:</p>
+<p class="code">_year=1999<br>
+Set /a _century=_year/100, _next=_century+1</p>
+<p>The numbers must all be within the range of 32 bit signed integer numbers (-2,147,483,648 through 2,147,483,647) to handle larger numbers use <a href="https://ss64.com/ps/">PowerShell</a> or <a href="https://ss64.com/vb/">VBScript</a>.</p>
+</blockquote>
+<h2>Leading Zero will specify Octal</h2>
+<blockquote>
+<p>Numeric values are decimal numbers, unless prefixed by <br>
+<b class="code">0x</b> for hexadecimal numbers,<br>
+<b class="code">0 </b>for octal numbers.<br>
+<br>
+So <span class="code">0x10</span> =  <span class="code">020</span> = <span class="code">16</span> decimal<br>
+<br>
+The octal notation can be confusing - all numeric values that start with zeros are treated as octal but 08 and 09 are not  valid octal digits.<br>
+For example <span class="code">SET /a _month=07</span> will return the value 7, but <span class="code">SET /a _month=09</span> will return an error.</p>
+</blockquote>
+<h2>Permanent changes</h2>
+<blockquote>
+<p>Changes made using the SET command are NOT permanent, they apply to the current CMD prompt only and remain only until the CMD window is closed.<br>
+To permanently change a variable at the command line use <a href="https://ss64.com/nt/setx.html">SetX</a><br>
+or with the GUI - Control Panel | System | Environment | System/User Variables<br>
+<br>
+Changing a variable permanently with SetX will not affect any CMD prompt that is already open. <br>
+Only new CMD prompts will get the new setting.<br>
+<br>
+You can of course use SetX in conjunction with SET to change both at the same time:</p>
+<p class="code">Set _Library=T:\Library\ <br>
+SetX _Library T:\Library\ /m</p>
+</blockquote>
+<h2>Change the environment for other sessions</h2>
+<blockquote>
+<p>Neither SET nor SetX will affect other CMD sessions that are already running on the machine . This as a good thing, particularly on multi-user machines, your scripts won't have to contend with a dynamically changing environment while they are running.</p>
+<p>It is  possible to add permanent environment variables to  the registry (<span class="code">HKCU\Environment</span>), but  this is an undocumented (and likely unsupported) technique and still it will not take effect until the users next login. </p>
+<p>System environment variables can  be found in the registry here:<br>
+<span class="code"> HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment</span></p>
+</blockquote>
+<h2>CALL SET</h2>
+<blockquote>
+<p>The <span class="code">CALL SET</span> syntax allows a <a href="https://ss64.com/nt/syntax-substring.html">variable substring</a> to be evaluated,  the <a href="https://ss64.com/nt/call.html">CALL</a> page has more detail on this technique, in most cases a better approach is to use <span class="code">Setlocal <a href="https://ss64.com/nt/delayedexpansion.html">EnableDelayedExpansion</a></span></p>
+</blockquote>
+<h2>Autoexec.bat</h2>
+<blockquote>
+<p>Any SET statement in c:\autoexec.bat will be parsed at boot time<br>
+Variables set in this way are not available to 32 bit gui programs - they won't appear in the control panel.<br>
+They will appear at the CMD prompt.<br>
+<br>
+If autoexec.bat CALLS any secondary batch files, the additional batch files will NOT be parsed at boot.<br>
+This behaviour can be useful on a dual boot PC.</p>
+</blockquote>
+<h2>Errorlevels</h2>
+<blockquote>
+<p> When <a href="https://ss64.com/nt/cmd.html">CMD Command Extensions</a> are enabled (the default):</p>
+<table>
+<caption>
+<a href="https://ss64.com/nt/errorlevel.html">Errorlevel</a>
+</caption>
+<tbody><tr>
+<td>If the variable was successfully changed</td>
+<td><span class="code"><i>unchanged</i></span>, typically this will be <span class="code">0</span> but if a previous command set an errorlevel, that will be preserved (this is a bug).</td>
+</tr>
+<tr>
+<td><span class="code">SET</span> No variable found or invalid name.<br>
+<span class="code">SET _var=value</span> when _var name starts with "/" and not enclosed in quotes.<br>
+<span class="code">SET /P</span> Empty response from user.</td>
+<td class="code">1</td>
+</tr>
+<tr>
+<td><span class="code">SET /A</span> Unbalanced parentheses</td>
+<td class="code">1073750988</td>
+</tr>
+<tr>
+<td><span class="code">SET /A</span> Missing operand</td>
+<td class="code">1073750989</td>
+</tr>
+<tr>
+<td><span class="code">SET /A</span> Syntax error</td>
+<td class="code">1073750990</td>
+</tr>
+<tr>
+<td><span class="code">SET /A</span> Invalid number</td>
+<td class="code">1073750991</td>
+</tr>
+<tr>
+<td><span class="code">SET /A</span> Number larger than 32-bits</td>
+<td class="code">1073750992</td>
+</tr>
+<tr>
+<td><span class="code">SET /A</span> Division by zero</td>
+<td class="code">1073750993</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>SET is an <a href="https://ss64.com/nt/syntax-internal.html">internal</a> command. <br>
+If <a href="https://ss64.com/nt/cmd.html">Command Extensions</a> are disabled all SET commands are disabled other than simple assignments like:<span class="code"> _variable=MyText</span></p>
+<p>The CMD shell will fail to read an environment variable if it contains more than <a href="https://support.microsoft.com/en-gb/help/830473/">8,191</a> characters.<br>
+<br>
+<i class="quote"># I got my mind set on you<br>
+# I got my mind set on you... -  Rudy Clark (<a href="https://www.youtube.com/watch?v=k68Fob0QA_k">James Ray</a>/<a href="https://www.youtube.com/watch?v=OnggBmaY4D4">George Harrison</a>)</i><br>
+<br>
+<b>Related:</b></p>
+<p class="space"><a href="https://ss64.com/nt/syntax-substring.html">Syntax - VarSubstring</a> Extract part of a variable (substring).<br>
+<a href="https://ss64.com/nt/syntax-replace.html">Syntax - VarSearch</a> Search &amp; replace part of a variable.<br>
+<a href="https://ss64.com/nt/syntax-variables.html">Syntax - Environment Variables</a> - List of default variables.<br>
+<a href="https://ss64.com/nt/call.html">CALL</a> - Evaluate environment variables.<br>
+<a href="https://ss64.com/nt/setx.html">SETX</a> - Set an environment variable permanently.<br>
+<a href="https://ss64.com/nt/setlocal.html">SETLOCAL</a> - Begin localisation of environment variable 
+changes.<br>
+<a href="https://ss64.com/nt/endlocal.html">ENDLOCAL</a> - End localisation of environment changes, use to return values.<br>
+<a href="https://ss64.com/nt/exit.html">EXIT</a> - Set a specific ERRORLEVEL.<br>
+<a href="https://ss64.com/nt/syntax-args.html">Parameters</a> - get a full or partial 
+pathname from a command line variable. <br>
+<a href="https://ss64.com/nt/path.html">PATH</a> - Change the %PATH% environment variable.<br>
+PATHMAN -  Resource Kit utility for modification of both the system and user paths. See Pathman.wri.<br>
+<a href="https://ss64.com/nt/reg.html">REG</a> - Read or Set Registry values.<br>
+<a href="https://ss64.com/nt/wmic.html">WMIC ENVIRONMENT</a> - Set environment variables through WMI.<br>
+<a href="https://stackoverflow.com/questions/6379619/explain-how-dos-batch-newline-variable-hack-works">StackOverflow</a> - Storing a Newline in a variable.<br>
+
+Powershell: <a href="https://ss64.com/ps/set-variable.html">Set-Variable</a> - Set a variable and a value (set/sv).<br>
+Powershell: <a href="https://ss64.com/ps/read-host.html">Read-Host</a> - Prompt for user input.<br>
+Equivalent bash command (Linux): <a href="https://ss64.com/bash/env.html">env</a> - Display, set, or remove environment variables.</p><!-- #BeginLibraryItem "/Library/foot_nt.lbi" --><p><!-- windows300 -->
+<script async="" src="./Set - Environment Variable - Windows CMD - SS64.com_files/f(2).txt"></script>
+<ins class="adsbygoogle" style="display: inline-block; width: 300px; height: 0px;" data-ad-client="ca-pub-6140977852749469" data-ad-slot="7649547908" data-adsbygoogle-status="done"><ins id="aswift_0_expand" style="display: inline-table; border: none; height: 0px; margin: 0px; padding: 0px; position: relative; visibility: visible; width: 300px; background-color: transparent;"><ins id="aswift_0_anchor" style="display: block; border: none; height: 0px; margin: 0px; padding: 0px; position: relative; visibility: visible; width: 300px; background-color: transparent; overflow: hidden; opacity: 0;"><iframe width="300" height="250" frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_0" name="aswift_0" style="left:0;position:absolute;top:0;border:0px;width:300px;height:250px;" src="./Set - Environment Variable - Windows CMD - SS64.com_files/saved_resource.html"></iframe></ins></ins></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script></p>
+<hr>
+<div id="bl">&nbsp;</div>
+<div id="br">Copyright © <a href="https://ss64.com/">SS64.com</a> 1999-2019<br>
+Some rights reserved</div><!-- #EndLibraryItem -->
+<ins class="adsbygoogle adsbygoogle-noablate" data-adsbygoogle-status="done" style="display: none !important;"><ins id="aswift_1_expand" style="display:inline-table;border:none;height:0px;margin:0;padding:0;position:relative;visibility:visible;width:0px;background-color:transparent;"><ins id="aswift_1_anchor" style="display:block;border:none;height:0px;margin:0;padding:0;position:relative;visibility:visible;width:0px;background-color:transparent;"><iframe frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_1" name="aswift_1" style="left:0;position:absolute;top:0;border:0px;width:0px;height:0px;" src="./Set - Environment Variable - Windows CMD - SS64.com_files/saved_resource(1).html"></iframe></ins></ins></ins><iframe id="google_osd_static_frame_3824098169886" name="google_osd_static_frame" style="display: none; width: 0px; height: 0px;" src="./Set - Environment Variable - Windows CMD - SS64.com_files/saved_resource(2).html"></iframe></body><iframe id="google_shimpl" style="display: none;" src="./Set - Environment Variable - Windows CMD - SS64.com_files/saved_resource(3).html"></iframe><iframe id="google_esf" name="google_esf" src="./Set - Environment Variable - Windows CMD - SS64.com_files/zrt_lookup.html" data-ad-client="ca-pub-6140977852749469" style="display: none;"></iframe></html>

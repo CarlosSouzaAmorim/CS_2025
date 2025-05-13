@@ -1,0 +1,19 @@
+NAO USAR : \GOG Games\1.2\Ships\VAB
+
+
+em HDN1_1 / 1.2 / CARLOS12
+\1.2\saves\CARLOS12\Ships\VAB\_kOS test 1 GDLV3.craft
+
+EM HDN2_1 / KSP 1.2.0.1586 / CARLOS TM
+KSP 1.2.0.1586\saves\CARLOS TM\Ships\VAB\_kOS test 1 GDLV3.craft
+			10 AG + POWER
+KSP 1.2.0.1586\saves\CARLOS TM\Ships\VAB\_kOS test varios cpu.craft
+
+
+
+
+
+
+
+
+

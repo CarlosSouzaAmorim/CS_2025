@@ -1,0 +1,203 @@
+﻿//----------------  FAZENDO AGORA -----------------------------
+Alterada FUNCTION TEST_CHECK_SENSORES{					[TST]	c3_scr_msg.ks[879]
+	retirar prints loucos que N sao debug > criar campo	[]		c3_scr_msg.ks[900] opcao show_valores 
+
+Editando função verifica_nave(). em c3[160]		30/08/2019 09:54
+	inserir testes de sensores presentes na nave		[]
+		para isso nao precisa de uma tela boas-vindas?	[]
+		
+Editando função [] em cp[40]
+	avisar quando o modo compile estiver desativado e que isso vai consumir espaço
+	VERIFICAR: FAZER: e se for ligado com o modo debug???
+	global MODO_COMPILE_ATIVO	is False
+	
+	EXIBE_FILES_VOLUME_INFO(). cp[697]
+	FUNCTION BEEP       cp[]
+	FUNCTION BEEP		c3_scr_msg.ks[948]
+	
+Editando c3_scr_msg.ks[351]
+	funcao debug e msg criam log em arquivo				[ok]
+		FILE_ALL_MSG_LOG > tudo que vem p/ PRINT_STAT()	[ok]	c3_scr_msg.ks[200]
+		FILE_MSG_LOG > PRINT_STAT(tfile,)				[ok]	c3_scr_msg.ks[126]
+		FILE_DEBUGLOG > tudo que vem p/ DEBUG()			[ok]	c3_scr_msg.ks[351]  > ativa>LOG_DEBUG
+	
+	alterada a maneira como as partes da nave fazem log
+		alterado um parametro para ingles 
+	verificar o menu de navegacao da nava
+	
+Editando cp3_test.bat cp3_config2.bat 			[]	31/08/2019 23:52
+Criado cp3_config3.bat
+	ALTEREI MUITA COISA NESSE SISTEMA: 
+		1. AGORA OS VALORES PADRAO FICAM NO FINAL DO ARquivo cp3_config3.bat
+			inseridos por opcao do usuario
+		2. Inserida opcao de exclusao auto antes de copiar
+		3. Inserido menu de pausa
+		4.
+		
+		
+Editando c3_autorun.ks "1.3"					[]	01/09/2019 00:59
+		adicionando opcoes no menu para desativar o modo compile	[]
+		incluir o reconhecimento do parametro no cp, c3				[]
+		
+//----------------  FAZENDO AGORA -----------------------------
+
+//-------------------  todo list ----------------------------------------------------------------
+FAZER 15/12/2020
+	não mostra menu inicial se redimensionar		FEITO	: TESTAR :??
+	REMOVER MENSAGEM: debug REDESENHA_TELA: Recuperando valores apos redesenho de tela.
+	POSICIONAMENTO aleatório de commMSGSShip:0 (durente o redimensionamento: usa valores hardc)
+	[3]log do processo: é impresso novamente apos redimensionamento
+	mensagem: ERRO: INIT VARS PRINT: erro_tam_terminal_HEIGHT[h_passo_max]:3
+
+FAZER 23/04/2020
+	INSERIR INFO NO .BAT PARA INDICAR QE OS CAMINHOS DEVEM SER CONFORME VISTOS DO PC QUE RODA O .BAT
+FAZER 03/09/2019								[]
+	LOG_DEBUG REPETITIVO PARA ARQUIVO SEPARADO	[]
+	DEBUG para espaco definido na tela			[]
+		com rolagem								[]
+	CRIAR arquivo de config para cada nave		[]
+		config para autorum em 0:/				[]			quero poder salvar opcoes de compila_auto
+		config em cada drive					[]
+		
+		
+		
+FAZER 30/08/2019
+SEM BATERIA FICA DIFICIL > ADICIONAR AVISO      [OK]
+	AVISO DE BATERIA ACABOU OU ACABANDO E INDIC	[OK]
+	POSICIONAR INDICADOR DE BATERIA             [OK]
+	Mostra_Bat{	>> MOSTRA SE DESCARREGA			[]
+
+TELA TRAZ PROBLEMAS SE FOR PEQUENA              [] 		VER
+	adicionar aviso para resolução norml do kos []
+
+fazer :
+
+https://www.youtube.com/watch?v=2UV1jPdqWhg&feature=youtu.be
+https://github.com/gisikw/ksprogramming
+https://www.troyfawkes.com/adventures-in-ksp-kos-math/
+
+FAZER TERMINAL REMOTO RECUPERAR VALORES DE DIMENSOES DE ANTES DA CONEXAO TELNET             []
+
+DEBUG FIXO PARA LOOPS                       []
+INDICAR CONEXAO TELNET NO "LOGUIN"          [OK]
+
+QUANDO A COMPILACAO FALHA O ARQUIVO JA FICA REGISTRADO ??		[]	???
+
+USAR ACTION GROUPS PARA CONTROLAR PARTES DO SCRIP > VER HOVER   []
+CHECAR SE A NAVE TEM : GRAVIOLI, ACELEROMETRO, BATERIA, KOS     []
+
+
+LISTAR CONFIG:TELNET OPCOES
+print v1:suffixnames.
+//-------------------  todo list ----------------------------------------------------------------
+
+PALAVRAS CHAVE:
+
+TESTAR
+FAZER
+REMOVER
+PALAVRAS CHAVE:
+SUBSTITUIR
+VER
+FAZENDO
+PORQUE
+
+
+//-------------------  todo list ----------------------------------------------------------------
+ADICIONE OUTRO CPU PARA TESTAR A ORIGEM DO DRIVE 					[ok]
+	TESTAR MUDAR PARA O DRIVE 1 SENDO CPU=2  E INICIAR O PROG 0:/C3	[ok]
+
+verificar enter no teclado e limpar prompt mas						[]
+	armazenar o comando em list_cmd									[]
+	imprimir a mensagem do enter no log_msg							[]
+	
+se a tecla for back apagar um caracter da linha de comando			[ok]
+
+CRIAR COMANDO PARA ABORTAR QUANDO FICA LOUCO						[]
+
+SE O AP NAO FOI ATINGIDO MAS O MAX_TROTTLE FOR ZERO					[]
+	a nave precisa saber se existe possibilidade de novo stage		[]
+	fazer checar se da para staging									[]
+	staging nao obedece limite repeticoes							[]
+	
+	
+	encontrar onde eh atualizada var PROMPT LINHA					[ok] linha_digitada
+	aplicar verificacao de opcoes na print_stat						[TESTAR]
+	
+	descobrir se o BREAK dentro do PRESERVE cancela o TRIGGER		[ok]http://ksp-kos.github.io/KOS_DOC/language/flow.html?highlight=preserve#preserve
+	
+	
+testar o STAGING DO exemplo											[]
+PEGAR RESOURCES DO STAGE: 											[] http://ksp-kos.github.io/KOS_DOC/structures/vessels/resource.html#structure:RESOURCE
+INSERIR CONTROLE DE NODE											[] http://ksp-kos.github.io/KOS_DOC/tutorials/exenode.html
+quando digitar M_ (SEM enter o jogo passa ao modo mapa)
+        ao apertar up VAI aparecer M_ novamente e o jogo desativa o modo mapa
+
+erro na copia
+	apos uma execucao mal sucedida, passou para 1:/, ao chamar run c3. nao atualiza e da erro de execucao anterior (pois nao recopiou o arq)
+	a questao é: como que antes ele conseguiu se copiar antes do erro? e agora nao porque?
+
+linha do file
+linha do cmd > apagar antes de nova ta bugando tudo
+
+INCLUIR CAMPO DE PLANO DE VOO: EXIBIR E INSERIR						[]
+PRINT_BIG_ERROR_NOCLS_TIMED     > desenhar linhas >					[]
+	pesquisar string:funcoes para preencher de espacos > 			[ok]
+	function enche_de_espacos										[ok]
+
+ACERTAR O LOOP DA checagem do tamanho minimo do terminal			[]
+ajustar print cmd > diminuir o lerdeza								[]
+definir nomes dos resources nos simple staging						[]
+
+NAVEGACAO DE MENU por seta e digitar o num (com ou sem enter?)		[]
+	opcao de voltar em variavel para cada tipo de menu				()
+
+COMPILADOR			fazer um outro prog para						[]
+	comparar os tamanhos dos arquivos de projeto 					(ok)
+	e compilar e copiar												()
+	somente os que foram alterados									()
+
+
+
+//-------------------  todo list ----------------------------------------------------------------
+
+
+runpath("c3",0).
+
+
+
+//---------------  ESTRUTURA DE FUNCOES DE DESENHO DE TELA  -------------------------------------
+
+function LOOP_PROG_PRINCIPAL{
+    DESENHA_TELA().
+    
+
+
+function DESENHA_TELA{
+	PADROES_E_SETUP_SIZES(def_sizes).
+	PADROES_E_SETUP_BORDERS(def_borders).
+    
+	local el is term_border_el.
+	local er is term_border_er.
+	local iv is term_border_iv.
+	local ei is term_border_ei.
+	local es is term_border_es.
+	local ih is term_border_ih.
+	local c  is term_border_c .
+    
+    CLEARSCREEN.
+    INICIALIZA_VARS_PRINT_STAT().
+
+    
+function PADROES_E_SETUP_SIZES{             //define largura e altura max das mensagens. [PRECISA DO BORDER ANTES]
+    pos_col_rigth	to (terminal:width - 1) - (larg_max_msg_log + term_border_er).//sem o -1 pois trabalha com a pos [0..i] ??? WTF
+    pos_col_left 	to ( (pos_col_rigth) - ( larg_max_car + term_border_iv + term_border_iv + espaco_entre_colunas) ).//term_border_c ? // + 5 pq tava sobreposto fazer
+	pos_col_central	to ( (pos_col_rigth) - espaco_entre_colunas - term_border_iv).//
+
+function PADROES_E_SETUP_BORDERS{           //define largura e altura max das bordas.
+
+
+//---------------  FIM ESTRUTURA DE FUNCOES DE DESENHO DE TELA  ---------------------------------
+
+
+

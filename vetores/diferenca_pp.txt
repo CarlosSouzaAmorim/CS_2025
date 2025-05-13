@@ -1,0 +1,28 @@
+int square(int i) {
+    return i++;
+}
+
+square:
+        push    rbp
+        mov     rbp, rsp
+        mov     DWORD PTR [rbp-20], edi
+        mov     DWORD PTR [rbp-4], 1
+        add     DWORD PTR [rbp-4], 1
+        mov     eax, DWORD PTR [rbp-4]
+        pop     rbp
+        ret
+
+
+
+int square(int i) {
+    return ++i;
+}
+
+square:
+        push    rbp
+        mov     rbp, rsp
+        mov     DWORD PTR [rbp-4], edi
+        add     DWORD PTR [rbp-4], 1
+        mov     eax, DWORD PTR [rbp-4]
+        pop     rbp
+        ret

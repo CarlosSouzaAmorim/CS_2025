@@ -1,0 +1,2468 @@
+REM Projeto: DBPro1
+REM Criado: 9/14/2009 3:14:48 PM
+REM
+REM ***** Código Fonte Principal *****
+REM
+
+rem Definindo arrays
+dim tabela_mensagens$(200)
+dim tabela_linhas$(200)
+dim palavras$(2000)
+dim DEVICES_COM_FORCE$(10)
+dim config_table$(20)
+dim files$(200,10)
+
+rem Setando variaveis
+numero_limite_arquivos = 200
+SYNC_RATE_STATUS = 15
+pos_cur_Y = 80
+num_linhas = 0
+
+rem Preenche os arrays com vazios
+      for count=0 to 200
+         tabela_mensagens$(count)=""
+      next count
+      for count=0 to 200
+         tabela_linhas$(count)=""
+      next count
+      for count=0 to 1999
+         palavras$(count)=""
+      next count
+      for count=0 to 10
+         DEVICES_COM_FORCE$(count)=""
+      next count
+
+rem Carregando configurações:
+print "Carregando as configurações: "
+   text_font$ =   Configuracoes("carrega", "text_font", "")
+   text_size  =   int(val(Configuracoes("carrega", "text_size", "")))
+   display_mode =  int(val(Configuracoes("carrega", "display_mode", "")))
+   window$ = Configuracoes("carrega", "window", "")
+   cpx# = val(Configuracoes("carrega", "cpx", ""))
+   cpy# = val(Configuracoes("carrega", "cpy", ""))
+   cpz# = val(Configuracoes("carrega", "cpz", ""))
+   cax# = val(Configuracoes("carrega", "cax", ""))
+   cay# = val(Configuracoes("carrega", "cay", ""))
+   caz# = val(Configuracoes("carrega", "caz", ""))
+
+   red   = int(val(configuracoes("carrega", "red", "")))
+   green = int(val(configuracoes("carrega", "green", "")))
+   blue  = int(val(configuracoes("carrega", "blue", "")))
+   red_f = int(val(configuracoes("carrega", "red_f", "")))
+   green_f = int(val(configuracoes("carrega", "green_f", "")))
+   blue_f  = int(val(configuracoes("carrega", "blue_f", "")))
+
+rem Mostrando configurações
+if file exist("debug.txt")
+   print
+   print "Fonte do texto   : ", text_font$
+   print "Tamanho do texto : ", text_size
+   print "Modo do video    : ", display_mode
+   print "Modo do window   : ", window$
+   print "Cpx              : ", Cpx#
+   print "Cpy              : ", Cpy#
+   print "Cpz              : ", Cpz#
+   print "Cax              : ", Cax#
+   print "Cay              : ", Cay#
+   print "Caz              : ", Caz#
+   print "red              : ", red
+   print "green            : ", green
+   print "blue             : ", blue
+   print "red_f            : ", red_f
+   print "green_f          : ", green_f
+   print "blue_f           : ", blue_f
+
+   repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+endif
+
+rem ---------- Setando configs. video --------
+   perform checklist for display modes
+   SetVideoMode(display_mode, 0)
+   display_mode_mouse = display_mode
+   display_mode_mouse_agora = display_mode_mouse
+   empty checklist
+rem ---------- Setando configs. Window -------
+   if window$ = "on" then set window on
+   if window$ = "off" then set window off
+rem ---------- Setando configs. Camera -------
+   gosub SET_CAM_POS
+rem ---------- Setando configs. texto --------
+   set text font text_font$
+   set text size text_size
+rem ---------- Fim Setando configs.  ---------
+
+      load bitmap "texturas\fold.bmp", 1
+      get image 1, 0, 0, 102, 118
+      delete bitmap 1
+      load bitmap "texturas\arqv.bmp", 1
+      get image 2, 0, 0, 102, 118
+      delete bitmap 1
+
+MENU_PRINCIPAL:
+   rem DESTIVE O QUE FAZ O PRINT_INFO DESAPARECER
+   rem sync on : sync rate 0 : backdrop on
+   cls
+   change mouse 0
+   show mouse
+   disable escapekey
+   color backdrop rgb(red,green,blue)
+
+   if mousex()<SrXMax and mousex()>SrXMin and mousey()<120 and mousey()>100 : center text SrXTxt,110, "[COMMAND LINE]"          : else : center text SrXTxt,110, "COMMAND LINE"        : endif
+   if mousex()<SrXMax and mousex()>SrXMin and mousey()<140 and mousey()>120 : center text SrXTxt,130, "[CONFIGURA CONTROLES]"   : else : center text SrXTxt,130, "CONFIGURA CONTROLES" : endif
+   if mousex()<SrXMax and mousex()>SrXMin and mousey()<160 and mousey()>140 : center text SrXTxt,150, "[CONFIGURA FONTES]"      : else : center text SrXTxt,150, "CONFIGURA FONTES"    : endif
+   if mousex()<SrXMax and mousex()>SrXMin and mousey()<180 and mousey()>160 : center text SrXTxt,170, "[CONFIGURA VIDEO]"       : else : center text SrXTxt,170, "CONFIGURA VIDEO"     : endif
+   if mousex()<SrXMax and mousex()>SrXMin and mousey()<200 and mousey()>180 : center text SrXTxt,190, "[INFORMAÇÕES DO SISTEMA]": else : center text SrXTxt,190, "INFORMAÇÕES DO SISTEMA"  : endif
+   if mousex()<SrXMax and mousex()>SrXMin and mousey()<220 and mousey()>200 : center text SrXTxt,210, "[TESTES]"                : else : center text SrXTxt,210, "TESTES"              : endif
+   if mousex()<SrXMax and mousex()>SrXMin and mousey()<240 and mousey()>220 : center text SrXTxt,230, "[EXPLORER 3D]"           : else : center text SrXTxt,230, "EXPLORER 3D"         : endif
+
+   if mousex()<SrXMax and mousex()>SrXMin and mousey()<300 and mousey()>280 : center text SrXTxt,290, "[SAIR DO PROGRAMA]"      : else : center text SrXTxt,290, "SAIR DO PROGRAMA"    : endif
+
+   if mousex()<SrXMax and mousex()>SrXMin and mousey()<390 and mousey()>370
+      rem Incluir esquema para salvar
+      display_mode_mouse = display_mode_mouse + int(mousemovez()*0.01)
+      if leftkey()=1
+         dec display_mode_mouse
+      endif
+      if rightkey()=1
+         inc display_mode_mouse
+      endif
+      if display_mode_mouse > 70 then display_mode_mouse = 70
+      if display_mode_mouse < 1 then display_mode_mouse = 1
+      if rightkey()=1 or leftkey()=1 or mouseclick()=1 or display_mode_mouse <>display_mode_mouse_agora
+         perform checklist for display modes
+         SetVideoMode(display_mode_mouse, 0)
+         empty checklist
+         info$ = "Display mode: " + str$(display_mode_mouse)
+         repeat : until rightkey()<>1 and leftkey()<>1 and mouseclick()<>1
+      endif
+      display_mode_mouse_agora = display_mode_mouse
+   endif
+
+   center text SrXTxt,380, "[Display mode mouse Z] : " + str$(display_mode_mouse)
+   gosub COMUM_MENUS
+
+   if mouseclick()=1
+      print_info( "Mouse click at " + str$( mouseX() ) + " " + str$( mouseY() ) )
+      repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+      if mousex()< SrXMax and mousex()> SrXMin and mousey()<120 and mousey()>100 then goto TESTA_COMMAND
+      if mousex()< SrXMax and mousex()> SrXMin and mousey()<140 and mousey()>120 then gosub PROCURA_CONTROL
+      if mousex()< SrXMax and mousex()> SrXMin and mousey()<160 and mousey()>140 then goto TESTA_FONTES
+      if mousex()< SrXMax and mousex()> SrXMin and mousey()<180 and mousey()>160 then gosub CONFIG_SYS
+      if mousex()< SrXMax and mousex()> SrXMin and mousey()<200 and mousey()>180 then gosub INFO_SYS
+      if mousex()< SrXMax and mousex()> SrXMin and mousey()<220 and mousey()>200 then goto MENU_PRINCIPAL_2
+      if mousex()< SrXMax and mousex()> SrXMin and mousey()<300 and mousey()>280 then goto FIM
+      if mousex()< SrXMax and mousex()> SrXMin and mousey()<240 and mousey()>220 then gosub EXPLORE_FILES
+   endif
+
+   if mouseclick()=2 then repeat : until mouseclick()<>2 : goto FIM
+
+   sync
+   goto MENU_PRINCIPAL
+
+MENU_PRINCIPAL_2:
+
+cls
+
+if CL$()<>"" then text 0,0, "Valor do parametro passado: " + CL$()
+center text 300,50, "[Programa para teste geral dos comandos descobertos]"
+set text font text_font$
+set text size 20
+center text 300,65, " Texto fonte: " + text font$() : rem BankGothic Md BT -- Symbol
+
+if mousex()<210 and mousex()>0   and mousey()<120 and mousey()>100 : text 0,110, "(1). PRIMEIRO TESTE: MID$"    : else : text 0,110, "[1]. Primeiro teste: MID$"    : endif
+if mousex()<165 and mousex()>0   and mousey()<140 and mousey()>120 : text 0,130, "(2). TESTES: SYS DLL"         : else : text 0,130, "[2]. Testes: sys dll"         : endif
+if mousex()<200 and mousex()>0   and mousey()<160 and mousey()>140 : text 0,150, "(3). PROCURA CONTROLES"       : else : text 0,150, "[3]. Procura controles"       : endif
+if mousex()<125 and mousex()>0   and mousey()<180 and mousey()>160 : text 0,170, "(4). COMMAND LINE"            : else : text 0,170, "[4]. Command Line"            : endif
+if mousex()<170 and mousex()>0   and mousey()<200 and mousey()>180 : text 0,190, "(5). RECONHECE PALAVRAS"      : else : text 0,190, "[5]. Reconhece palavras"      : endif
+if mousex()<180 and mousex()>0   and mousey()<210 and mousey()>200 : text 0,210, "(S). SAIR DO PROGRAMA.";      : else : text 0,210, "[s]. Sair do programa.";      : endif
+
+if mousex()<550 and mousex()>300 and mousey()<120 and mousey()>100 : text 300,110, "(P). PROCURA VALOR SCANCODE()": else : text 300,110, "[p]. Procura valor scancode()": endif
+if mousex()<550 and mousex()>300 and mousey()<140 and mousey()>120 : text 300,130, "(F). TESTA_FONTES"            : else : text 300,130, "[f]. testa fontes"      : endif
+if mousex()<550 and mousex()>300 and mousey()<160 and mousey()>140 : text 300,150, "(C). MOSTRA_CUBO"             : else : text 300,150, "[c]. Mostra cubo"       : endif
+if mousex()<550 and mousex()>300 and mousey()<180 and mousey()>160 : text 300,170, "(G). CONFIG_SYS"              : else : text 300,170, "[g]. Config Sys"        : endif
+if mousex()<550 and mousex()>300 and mousey()<200 and mousey()>180 : text 300,190, "(I). INFO_SYS"                : else : text 300,190, "[i]. Info Sys"          : endif
+if mousex()<550 and mousex()>300 and mousey()<220 and mousey()>200 : text 300,210, "(K). PERFORM_CHECKLIST"       : else : text 300,210, "[k]. PERFORM_CHECKLIST" : endif
+if mousex()<550 and mousex()>300 and mousey()<240 and mousey()>220 : text 300,230, "(E). EXPLORE FILES"           : else : text 300,230, "[e]. Explore Files as in IROM MAN"     : endif
+
+gosub COMUM_MENUS
+
+if scancode()=2 then goto TESTA_MID
+if scancode()=3 then goto TESTA_SYS_DLL
+if scancode()=4 then gosub PROCURA_CONTROL
+if scancode()=5 then goto TESTA_COMMAND
+if scancode()=6 then goto RECONHECE_PALAVRAS
+if scancode()=31 then    goto MENU_PRINCIPAL
+if escapekey()=1 then    goto MENU_PRINCIPAL
+if mouseclick()=2 then repeat : until mouseclick()<>2 :    goto MENU_PRINCIPAL
+if scancode()=33 then goto TESTA_FONTES
+if scancode()=25 then goto TESTA_SCANCODE
+if scancode()=46 then gosub ATIVA_CUBO
+
+if mouseclick()=1
+   repeat : until mouseclick()<>1
+   if mousex()<210 and mousex()>0   and mousey()<120 and mousey()>100 then goto TESTA_MID
+   if mousex()<165 and mousex()>0   and mousey()<140 and mousey()>120 then goto TESTA_SYS_DLL
+   if mousex()<200 and mousex()>0   and mousey()<160 and mousey()>140 then gosub PROCURA_CONTROL
+   if mousex()<125 and mousex()>0   and mousey()<180 and mousey()>160 then goto TESTA_COMMAND
+   if mousex()<170 and mousex()>0   and mousey()<200 and mousey()>180 then goto RECONHECE_PALAVRAS
+   if mousex()<180 and mousex()>0   and mousey()<210 and mousey()>200 then    goto MENU_PRINCIPAL
+   if mousex()<550 and mousex()>300 and mousey()<120 and mousey()>100 then goto TESTA_SCANCODE
+   if mousex()<550 and mousex()>300 and mousey()<140 and mousey()>120 then goto TESTA_FONTES
+   if mousex()<550 and mousex()>300 and mousey()<160 and mousey()>140 then gosub ATIVA_CUBO
+   if mousex()<550 and mousex()>300 and mousey()<180 and mousey()>160 then gosub CONFIG_SYS
+   if mousex()<550 and mousex()>300 and mousey()<200 and mousey()>180 then gosub INFO_SYS
+   if mousex()<550 and mousex()>300 and mousey()<220 and mousey()>200 then gosub PERFORM_CHECKLIST
+   if mousex()<550 and mousex()>300 and mousey()<240 and mousey()>220 then gosub EXPLORE_FILES
+endif
+
+sync
+goto MENU_PRINCIPAL_2
+rem =======================================================================
+TESTA_MID:
+
+cls
+text 100,100, "[Este trecho pratica uso do MID$ e do LEN (OK)]"
+
+set cursor 50,150
+input "Digite uma string:",testa_mid$
+if testa_mid$="" then goto TESTA_MID
+
+for testa_mid=1 to len(testa_mid$)
+   text 50,150+(testa_mid)*15, "Caractere " + str$(testa_mid) + " : " + mid$(testa_mid$,testa_mid)
+next testa_mid
+
+suspend for key
+goto MENU_PRINCIPAL
+rem =======================================================================
+
+TESTA_SCANCODE:
+   LOOP_SC:
+      repeat
+         cls
+         text 100,100, "[Programa para teste de uso do scancode: pressione uma tecla]"
+         code=scancode()
+         if code<>0 then goto IMPRIME_SC
+      until mouseclick()=2
+      goto MENU_PRINCIPAL
+   IMPRIME_SC:
+      text 100,100, "[Programa para teste de uso do scancode: pressione uma tecla]"
+      text 100,130, "Code da tecla pressionada: " + str$(code)
+      code=0
+      goto LOOP_SC
+   goto MENU_PRINCIPAL
+
+rem =======================================================================
+
+TESTA_FONTES:
+   perform checklist for fonts
+   text_size=24
+
+   repeat
+      cls
+      text 50, 50, "PROGRAMA TESTA HELP TEXTO"
+
+      if mousex()<300 and mousex()>100 and mousey()<120 and mousey()>100 : text 100,110, "(1). NAVEGAR FONTES" : else : text 100,110, "[1]. Navegar fontes"  : endif
+      if mousex()<300 and mousex()>100 and mousey()<140 and mousey()>120 : text 100,130, "(2). PROCURAR FONTE ESPECÍFICA"   : else : text 100,130, "[2]. Procurar fonte específica" : endif
+      if mousex()<300 and mousex()>100 and mousey()<160 and mousey()>140 : text 100,150, "(3). CONFIGURA TEXTO"   : else : text 100,150, "[3]. Configura texto" : endif
+
+      gosub COMUM_MENUS
+
+      if mouseclick()=1
+         repeat : until mouseclick()<>1
+         if mousex()<300 and mousex()>100 and mousey()<120 and mousey()>100 then gosub NAVEGA_FONTE
+         if mousex()<300 and mousex()>100 and mousey()<140 and mousey()>120 then gosub PROCURA_FONTE
+         if mousex()<300 and mousex()>100 and mousey()<160 and mousey()>140 then gosub CONFIG_TEXT
+      endif
+
+   until mouseclick()=2
+   repeat : until mouseclick()<>2
+
+   empty checklist
+   goto MENU_PRINCIPAL
+
+PROCURA_FONTE:
+   input "Informe o nome da fonte: ", nome_fonte$
+   if nome_fonte$="" then return
+   for numero_fonte=1 to checklist quantity()
+      if upper$(checklist string$(numero_fonte))=upper$(nome_fonte$) then print "Fonte encontrada : pos ", numero_fonte : wait key : return
+   next numero_fonte
+   print "Fonte não encontrada."
+goto PROCURA_FONTE
+
+NAVEGA_FONTE:
+   for f=1 to checklist quantity()
+      if checklist string$(f) = text_font$ then goto NAVEGA_2_FONTE
+   next f
+NAVEGA_2_FONTE:
+   do
+   if text_size<0 then text_size=0
+   if f<1         then f=1
+
+   set text font checklist string$(f)
+   set text size text_size
+
+   cls
+   set text font "system" : text 10, 10, "  Fonte: " + checklist string$(f) : set text font checklist string$(f)
+   print
+   print
+   Print "  Fonte: ",checklist string$(f)
+   print
+   print "  A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
+   print "  a b c d e f g h i j k l m n o p q r s t u v w x y z"
+   print "  0 1 2 3 4 5 6 7 8 9"
+   print
+   print "  ------  infos  ----------"
+   print "  Numero da fonte: ", f, " de ", checklist quantity()
+   print "  Tamanho do texto: ", text_size
+   print "  ------  infos  ----------"
+
+      if upkey()=1 or downkey()=1 then sleep 100
+
+      if upkey()=1      then inc text_size
+      if downkey()=1    then dec text_size
+      if leftkey()=1    then dec f : repeat : until leftkey()<>1
+      if rightkey()=1   then inc f : repeat : until rightkey()<>1
+      if returnkey()=1
+         Configuracoes("salva", "text_font", checklist string$(f))
+         Configuracoes("salva", "text_size", str$(text_size))
+         info$ = "Fonte configurada. " + checklist string$(f) + "  " + str$(text_size)
+
+         text_font$=checklist string$(f) : repeat : until returnkey()<>1 : exit
+      endif
+   loop
+return
+rem -------------------------------------------------------------------------
+CONFIG_TEXT:
+   repeat
+      cls
+      text 50, 50, "Configurações do texto"
+
+      if mousex()<300 and mousex()>100 and mousey()<120 and mousey()>100 : text 100,110, "(1). TRANSPARENCIA: " + str$(TRANSPARENTE) : else : text 100,110, "[1]. Transparencia: " + str$(TRANSPARENTE) : endif
+      if mousex()<300 and mousex()>100 and mousey()<140 and mousey()>120 : text 100,130, "(2). ESTILO TEXTO ["+str$(menu_estilo_texto)+"]" : else : text 100,130, "[2]. Estilo texto ["+str$(menu_estilo_texto)+"]" : endif
+
+      gosub COMUM_MENUS
+
+      if menu_estilo_texto = 1
+         text 170,15, "menu_estilo_texto ["+str$(menu_estilo_texto)+"]"
+
+         if mousex()<300 and mousex()>150 and mousey()<200 and mousey()>180 : text 150,190, "(L). NORMAL" : else : text 150,190, "(l). Normal" : endif
+         if mousex()<300 and mousex()>150 and mousey()<220 and mousey()>200 : text 150,210, "(I). ITALIC ["+str$(italico_estilo_texto)+"]" : else : text 150,210, "(i). Italic ["+str$(italico_estilo_texto)+"]" : endif
+         if mousex()<300 and mousex()>150 and mousey()<240 and mousey()>220 : text 150,230, "(N). BOLD ["+str$(negrito_estilo_texto)+"]" : else : text 150,230, "(n). Bold ["+str$(negrito_estilo_texto)+"]" : endif
+         if mouseclick()=1
+            if mousex()<300 and mousex()>150 and mousey()<200 and mousey()>180 then gosub STYLE_NORMAL_TEXT
+            if mousex()<300 and mousex()>150 and mousey()<220 and mousey()>200 then gosub STYLE_ITALIC_TEXT
+            if mousex()<300 and mousex()>150 and mousey()<240 and mousey()>220 then gosub STYLE_BOLD_TEXT
+         endif
+      endif
+
+      if mouseclick()=1
+         repeat : until mouseclick()<>1
+         if mousex()<300 and mousex()>100 and mousey()<120 and mousey()>100 then gosub TRANSPARENCIA_TEXTO
+         if mousex()<300 and mousex()>100 and mousey()<140 and mousey()>120 then gosub MENU_CONFIG_STYLE_TEXT
+      endif
+
+   until mouseclick()=2
+   repeat : until mouseclick()<>2
+   return
+
+TRANSPARENCIA_TEXTO:
+   if TRANSPARENTE = 0
+      TRANSPARENTE = 1
+      set text transparent
+   else
+      TRANSPARENTE = 0
+      set text opaque
+   endif
+   return
+MENU_CONFIG_STYLE_TEXT:
+   if menu_estilo_texto = 1
+      menu_estilo_texto = 0
+   else
+      menu_estilo_texto = 1
+   endif
+   return
+STYLE_ITALIC_TEXT:
+   if italico_estilo_texto = 0
+      italico_estilo_texto = 1
+      if negrito_estilo_texto = 1 then set text to bolditalic else set text to italic
+   else
+      italico_estilo_texto = 0
+      if negrito_estilo_texto = 1 then set text to bold else set text to normal
+   endif
+   return
+STYLE_BOLD_TEXT:
+   if negrito_estilo_texto = 0
+      negrito_estilo_texto = 1
+      if italico_estilo_texto = 1 then set text to bolditalic else set text to bold
+   else
+      negrito_estilo_texto = 0
+      if italico_estilo_texto = 1 then set text to italic else set text to normal
+   endif
+   return
+STYLE_NORMAL_TEXT:
+      italico_estilo_texto = 0
+      negrito_estilo_texto = 0
+      set text to normal
+   return
+rem =========================================================================
+PROCURA_CONTROL:
+   repeat
+      cls
+      text 50, 25, "Dispositivo atual: " + control device name$()
+      text 50, 50, "PROGRAMA TESTA CONTROL"
+
+      if mousex()<300 and mousex()>100 and mousey()<120 and mousey()>100 : text 100,110, "(1). PROCURA DISPOSITIVOS DISPONIVEIS" : else : text 100,110, "[1]. Procura dispositivos disponiveis"  : endif
+      if mousex()<300 and mousex()>100 and mousey()<160 and mousey()>140 : text 100,150, "(3). TESTA BOTOES"                     : else : text 100,150, "[3]. Testa botoes" : endif
+      if mousex()<300 and mousex()>100 and mousey()<180 and mousey()>160 : text 100,170, "(4). TESTA FORCE FEED-BACK"            : else : text 100,170, "[4]. Testa force-feedback" : endif
+
+      gosub COMUM_MENUS
+
+      if mouseclick()=1
+         repeat : until mouseclick()<>1
+         if mousex()<300 and mousex()>100 and mousey()<120 and mousey()>100 then gosub PROCURA_DEVICES_CONTROL
+         if mousex()<300 and mousex()>100 and mousey()<160 and mousey()>140 then gosub TESTA_CONTROL
+         if mousex()<300 and mousex()>100 and mousey()<180 and mousey()>160 then gosub TESTA_FORCE_CONTROL
+      endif
+
+   until mouseclick()=2 : repeat : until mouseclick()<>2
+   empty checklist
+   return
+rem -------------------------------------------------------------------------
+PROCURA_DEVICES_CONTROL:
+   item_da_lista=1
+   perform checklist for control devices
+   NEXT_DEVICE_CONTROL:
+   do
+      if item_da_lista < 1 then item_da_lista=1
+      if item_da_lista > CHECKLIST QUANTITY() then item_da_lista=CHECKLIST QUANTITY()
+      cls
+      text 50, 25,  "Dispositivo padrão atual: " + control device name$()
+      text 50, 50,  "Encontrado(s) " + str$(CHECKLIST QUANTITY()) + " dispositivo(s)."
+      if CHECKLIST QUANTITY() <> 0
+         text 50, 90, "Item " + str$(item_da_lista) + " : " + CHECKLIST STRING$(item_da_lista)
+         text 50, 120, "CHECKLIST VALUE A : " + str$(CHECKLIST VALUE A(item_da_lista))
+         text 50, 140, "CHECKLIST VALUE B : " + str$(CHECKLIST VALUE B(item_da_lista))
+         text 50, 160, "CHECKLIST VALUE C : " + str$(CHECKLIST VALUE C(item_da_lista))
+         text 50, 180, "CHECKLIST VALUE D : " + str$(CHECKLIST VALUE D(item_da_lista))
+
+         text 50, 220, "Use : Left, Right, Enter ou RMB para as ações."
+      else
+         text 50, 90, "Não foi encontrado nenhum dispositivo de controle."
+      endif
+      if rightkey()=1  then inc item_da_lista : repeat : until rightkey()<>1 : goto NEXT_DEVICE_CONTROL
+      if leftkey()=1   then dec item_da_lista : repeat : until leftkey()<>1 : goto NEXT_DEVICE_CONTROL
+      if returnkey()=1 then repeat : until returnkey() <> 1 : gosub SET_DEVICE_CONTROL
+      if mouseclick()=2 then repeat : until mouseclick()<>2 : exit
+   loop
+   empty checklist
+return
+
+rem -------------------------------------------------------------------------
+SET_DEVICE_CONTROL:
+  text 50, 260, "Definindo dispositivo padrão:"
+  text 50, 275, "SET CONTROL DEVICE " + CHECKLIST STRING$(item_da_lista)
+   set control device CHECKLIST STRING$(item_da_lista)
+   if control device name$() = CHECKLIST STRING$(item_da_lista)
+      text 50, 290, "Definido com sucesso."
+   else
+      text 50, 290, "Não foi possivel definir."
+   endif
+   repeat : until mouseclick()=2 : repeat : until mouseclick()<>2
+   return
+
+rem -------------------------------------------------------------------------
+TESTA_CONTROL:
+   do
+      cls
+      rem Verificar se existe um controle
+      text 100, 50, "Pressione as teclas e mova os eixos do controle: "
+      text 100, 70, "CONTROL DEVICE NAME$ "
+      text 100, 85, control device name$()
+      text 100, 120, "Eixo X : " + str$( joystick x() )
+      text 100, 135, "Eixo Y : " + str$( joystick y() )
+      text 100, 150, "Eixo Z : " + str$( joystick z() )
+
+      text 100,170, "Code do Botao pressionado [0 a 34]"
+      text 100,185, " JOYSTICK FIRE X ("
+      text 270,185, ") = "
+      for num_botao=0 to 34
+         if joystick fire x(num_botao) = 1
+            text 250, 185, str$(num_botao)
+            text 300, 185, str$(joystick fire x(num_botao))
+            text 350, 185, "[JOY " + STR$(num_botao + 1) + "]"
+         endif
+      next num_botao
+
+      text 50, 250, "JOYSTICK UP    : " + str$(JOYSTICK UP())
+      text 50, 265, "JOYSTICK DOWN  : " + str$(JOYSTICK DOWN())
+      text 50, 280, "JOYSTICK LEFT  : " + str$(JOYSTICK LEFT())
+      text 50, 295, "JOYSTICK RIGHT : " + str$(JOYSTICK RIGHT())
+
+      text 50, 315, "JOYSTICK X : " + str$(JOYSTICK X())
+      text 50, 330, "JOYSTICK Y : " + str$(JOYSTICK Y())
+      text 50, 345, "JOYSTICK Z : " + str$(JOYSTICK Z())
+
+      text 50, 365, "JOYSTICK FIRE A : " + str$(JOYSTICK FIRE A())
+      text 50, 380, "JOYSTICK FIRE B : " + str$(JOYSTICK FIRE B())
+      text 50, 395, "JOYSTICK FIRE C : " + str$(JOYSTICK FIRE C())
+      text 50, 410, "JOYSTICK FIRE D : " + str$(JOYSTICK FIRE D())
+
+      text 300, 250, "JOYSTICK SLIDER A : " + str$(JOYSTICK SLIDER A())
+      text 300, 265, "JOYSTICK SLIDER B : " + str$(JOYSTICK SLIDER B())
+      text 300, 280, "JOYSTICK SLIDER C : " + str$(JOYSTICK SLIDER C())
+      text 300, 295, "JOYSTICK SLIDER D : " + str$(JOYSTICK SLIDER D())
+
+      text 300, 315, "JOYSTICK TWIST X : " + str$(JOYSTICK TWIST X())
+      text 300, 330, "JOYSTICK TWIST Y : " + str$(JOYSTICK TWIST Y())
+      text 300, 345, "JOYSTICK TWIST Z : " + str$(JOYSTICK TWIST Z())
+
+      text 300, 365, "JOYSTICK HAT ANGLE : " + str$(JOYSTICK HAT ANGLE(num_botao))
+
+      text 300, 385, "CONTROL DEVICE X : " + str$(CONTROL DEVICE X())
+      text 300, 400, "CONTROL DEVICE Y : " + str$(CONTROL DEVICE Y())
+      text 300, 415, "CONTROL DEVICE Z : " + str$(CONTROL DEVICE Z())
+
+
+      if mouseclick()=2 then repeat : until mouseclick()<>2 : return
+      sync
+   loop
+
+rem -------------------------------------------------------------------------
+TESTA_FORCE_CONTROL:
+   intensidade_forca_control = 100
+   valor_do_atrazo_control = 1000
+   valor_do_angulo_control# = 99
+   DEVICE_COM_FORCE = 0
+   cls
+      rem Para evitar a mensagem de erro; [Nenhum controlador de retorno foi encontrado]
+      text 100, 80, "Procurando por dispositivos com capacidade de resposta ..."
+      perform checklist for control devices
+      DEVICE_ATUAL_POSSUI_FORCE = 0
+      if checklist quantity() <> 0
+         for item_da_lista=1 to checklist quantity()
+            if checklist string$(item_da_lista) = "" then text 100, 95, "Deu nojo: Nome nulo [checklist string$() = '']": wait key
+            rem Quando tem force feed-back:
+            if checklist value a(item_da_lista) = 1
+               inc DEVICE_COM_FORCE
+               DEVICES_COM_FORCE$(DEVICE_COM_FORCE) = checklist string$(item_da_lista)
+            endif
+         next item_da_lista
+      else
+         text 100, 95, "Deu nojo: Nem ha dispositivos disponiveis."
+      endif
+
+      if DEVICE_COM_FORCE = 0
+         text 100, 110, "Nenhum controlador de retorno foi encontrado."
+         repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+         return
+      else
+         text 100, 110, "Foi encontrado controlador de retorno."
+         text 100, 125,  "Ativando primeiro controlador de retorno encontrado."
+         set cursor 0, 145
+         print  "DEVICE NAMES: "
+         for i=1 to DEVICE_COM_FORCE
+            print DEVICES_COM_FORCE$(i)
+         next i
+         rem gosub SET_DEVICE_CONTROL
+         set control device DEVICES_COM_FORCE$(1)
+         if control device name$() = DEVICES_COM_FORCE$(1)
+            text 50, 290, "Definido com sucesso: " + DEVICES_COM_FORCE$(1)
+         else
+            text 50, 290, "Não foi possivel definir: " + DEVICES_COM_FORCE$(1)
+         endif
+
+         repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+      endif
+      EMPTY CHECKLIST
+
+   do
+      cls
+      text 50, 50, "Teste de force feed-back do controle: " + control device name$()
+
+      if mousex()<210 and mousex()>50   and mousey()<120 and mousey()>100 : text 50,110, "FORCE UP"    : else : text 50,110, "Force Up"        : endif
+      if mousex()<165 and mousex()>50   and mousey()<140 and mousey()>120 : text 50,130, "FORCE DOWN"  : else : text 50,130, "Force Down"      : endif
+      if mousex()<200 and mousex()>50   and mousey()<160 and mousey()>140 : text 50,150, "FORCE LEFT"  : else : text 50,150, "Force Left"      : endif
+      if mousex()<125 and mousex()>50   and mousey()<180 and mousey()>160 : text 50,170, "FORCE RIGHT" : else : text 50,170, "Force Right"     : endif
+      if mousex()<170 and mousex()>50   and mousey()<200 and mousey()>180 : text 50,190, "FORCE ANGLE" : else : text 50,190, "Force Angle"     : endif
+      if mousex()<180 and mousex()>50   and mousey()<210 and mousey()>200 : text 50,210, "FORCE NO EFFECT"    : else : text 50,210, "Force No Effect"        : endif
+
+      if mousex()<550 and mousex()>300 and mousey()<120 and mousey()>100 : text 300,110, "FORCE WATER EFFECT" : else : text 300,110, "Force Water Effect" : endif
+      if mousex()<550 and mousex()>300 and mousey()<140 and mousey()>120 : text 300,130, "FORCE SHOOT"        : else : text 300,130, "Force Shoot"        : endif
+      if mousex()<550 and mousex()>300 and mousey()<160 and mousey()>140 : text 300,150, "FORCE CHAINSAW"     : else : text 300,150, "Force Shainsaw"     : endif
+      if mousex()<550 and mousex()>300 and mousey()<180 and mousey()>160 : text 300,170, "FORCE IMPACT"       : else : text 300,170, "Force Impact"       : endif
+      if mousex()<550 and mousex()>300 and mousey()<200 and mousey()>180 : text 300,190, "FORCE AUTO CENTER " + "[" + str$(FORCE_AUTO_CENTER_control) + "]" : else : text 300,190, "Force Auto Center " + "[" + str$(FORCE_AUTO_CENTER_control) + "]" : endif
+
+      if mouseclick() = 1
+         if mousex()<210 and mousex()>50   and mousey()<120 and mousey()>100 then force up intensidade_forca_control
+         if mousex()<165 and mousex()>50   and mousey()<140 and mousey()>120 then force down intensidade_forca_control
+         if mousex()<200 and mousex()>50   and mousey()<160 and mousey()>140 then force left intensidade_forca_control
+         if mousex()<125 and mousex()>50   and mousey()<180 and mousey()>160 then force right intensidade_forca_control
+         if mousex()<170 and mousex()>50   and mousey()<200 and mousey()>180 then force angle intensidade_forca_control, valor_do_angulo_control#, valor_do_atrazo_control
+         if mousex()<180 and mousex()>50   and mousey()<210 and mousey()>200 then force no effect
+
+         if mousex()<550 and mousex()>300 and mousey()<120 and mousey()>100 then force water effect intensidade_forca_control, valor_do_atrazo_control
+         if mousex()<550 and mousex()>300 and mousey()<140 and mousey()>120 then force shoot intensidade_forca_control, valor_do_atrazo_control
+         if mousex()<550 and mousex()>300 and mousey()<160 and mousey()>140 then force chainsaw intensidade_forca_control, valor_do_atrazo_control
+         if mousex()<550 and mousex()>300 and mousey()<180 and mousey()>160 then FORCE IMPACT intensidade_forca_control, valor_do_atrazo_control
+         if mousex()<550 and mousex()>300 and mousey()<200 and mousey()>180 then repeat : until mouseclick() <> 1 : gosub FORCE_AUTO_CENTER_ON_OFF
+      endif
+
+      text 300, 250, "intensidade_forca_control : " + str$(intensidade_forca_control)
+      text 300, 270, "valor_do_atrazo_control   : " + str$(valor_do_atrazo_control)
+      text 300, 290, "valor_do_angulo_control#  : " + str$(valor_do_angulo_control#)
+      text 300, 310, "Use a roda do mouse para alterar isto"
+         if mousex()<550 and mousex()>300 and mousey()<260 and mousey()>240
+            intensidade_forca_control = intensidade_forca_control + int(mousemovez()*0.1)
+            if intensidade_forca_control < 0 then intensidade_forca_control = 0
+            if intensidade_forca_control > 100 then intensidade_forca_control = 100
+         endif
+         if mousex()<550 and mousex()>300 and mousey()<280 and mousey()>260
+            valor_do_atrazo_control = valor_do_atrazo_control + int(mousemovez()*0.5)
+            if valor_do_atrazo_control < 0 then valor_do_atrazo_control = 0
+            if valor_do_atrazo_control > 1000 then valor_do_atrazo_control = 1000
+         endif
+         if mousex()<550 and mousex()>300 and mousey()<300 and mousey()>280
+            valor_do_angulo_control# = valor_do_angulo_control# + int(mousemovez()*0.1)
+            if valor_do_angulo_control# < 0 then valor_do_angulo_control# = 0
+            if valor_do_angulo_control# > 360 then valor_do_angulo_control# = 360
+         endif
+
+      if mouseclick()=2 then repeat : until mouseclick()<>2 : return
+
+remstart
+
+FORCE UP : FORCE UP Valor da Grandeza
+FORCE DOWN : FORCE DOWN Valor da Grandeza
+FORCE LEFT : FORCE LEFT Valor da Grandeza
+FORCE RIGHT : FORCE RIGHT Valor da Grandeza
+FORCE ANGLE : FORCE ANGLE Valor da Grandeza, Valor do ângulo, Valor do Atraso
+FORCE NO EFFECT : FORCE NO EFFECT
+FORCE WATER EFFECT : FORCE WATER EFFECT Valor da Grandeza, Valor de Atraso
+FORCE SHOOT : FORCE SHOOT Valor da Grandeza, Valor de Atraso
+FORCE CHAINSAW : FORCE CHAINSAW Valor da Grandeza, Valor de Atraso
+FORCE IMPACT : FORCE IMPACT Valor da Grandeza, Valor de Atraso
+FORCE AUTO CENTER ON : FORCE AUTO CENTER ON
+FORCE AUTO CENTER OFF : FORCE AUTO CENTER OFF
+remend
+
+   loop
+return
+rem -----------------------------------------------------------------------
+FORCE_AUTO_CENTER_ON_OFF:
+   if FORCE_AUTO_CENTER_control = 1
+      FORCE_AUTO_CENTER_control = 0
+      force auto center off
+   else
+      FORCE_AUTO_CENTER_control = 1
+      force auto center on
+   endif
+return
+rem =======================================================================
+
+RECONHECE_PALAVRAS:
+num_palavras=0
+
+repeat
+cls
+text 50, 50, "TESTE DE RECONHECIMENTO DE PALAVRAS"
+
+if mousex()<300 and mousex()>100 and mousey()<120 and mousey()>100 : text 100,110, "[1]. EM LINHA DE COMANDO"  : else : text 100,110, "(1). Em linha de comando"  : endif
+if mousex()<300 and mousex()>100 and mousey()<140 and mousey()>120 : text 100,130, "[2]. EM ARQUIVOS"          : else : text 100,130, "(2). Em arquivos"          : endif
+
+      gosub COMUM_MENUS
+
+if mouseclick()=1
+   if mousex()<300 and mousex()>100 and mousey()<120 and mousey()>100 then gosub CMD_RECONHECE_PALAVRAS
+   if mousex()<300 and mousex()>100 and mousey()<140 and mousey()>120 then gosub ARQUIVOS_RECONHECE_PALAVRAS
+endif
+
+if inkey$()="1" then goSUB CMD_RECONHECE_PALAVRAS
+if inkey$()="2" then gosub ARQUIVOS_RECONHECE_PALAVRAS
+
+until mouseclick()=2
+goto MENU_PRINCIPAL
+
+CMD_RECONHECE_PALAVRAS:
+cls
+repeat : until returnkey()<>1
+input "Digite palavras com espaços e simbolos:", linha_de_texto$
+string_lida$=linha_de_texto$
+
+gosub PROCURA_PALAVRAS
+
+for palavra=0 to num_palavras
+   print palavras$(palavra)
+next palavra
+
+wait key
+return
+
+ARQUIVOS_RECONHECE_PALAVRAS:
+   cls
+   text 50, 50, "TESTE DE RECONHECIMENTO DE PALAVRAS"
+   set cursor  0,70
+   repeat : until returnkey()<>1 and mouseclick()<>1
+   num_linhas=0
+
+   if cl$()<>""
+      print "Arquivo especificado por linha de comando: ", cl$()
+      repeat : until inkey$()<>"" or mouseclick()=1
+      repeat : until mouseclick()<>1 and inkey$()=""
+      nome_do_arquivo$=CL$()
+      if file exist(nome_do_arquivo$)=0 then print "Arquivo não existe." : return
+      goto FOI_ARQUIVO_CL_PALAVRAS
+   endif
+   input "Entre com o nome do arquivo para abrir: ", nome_do_arquivo$
+   if nome_do_arquivo$="" then return
+   if file exist(nome_do_arquivo$)=0 then print "Arquivo não existe." : return
+
+   FOI_ARQUIVO_CL_PALAVRAS:
+   open to read 1, nome_do_arquivo$
+   do
+      cls
+      if array count(palavras$(0))=<num_palavras
+         text 300,20, "Lendo arquivo ... ["+ erro$ +"]"
+         repeat : until mouseclick()=1 or inkey$()<>"" : repeat : until mouseclick()<>1 and inkey$()=""
+         exit
+         endif
+      if file end(1)
+         text 300,20, "Lendo arquivo ... [CONCLUIDO]"
+         exit
+         endif
+      if escapekey()=1
+         text 300,20, "Lendo arquivo ... [CANCELADO]"
+         repeat : until mouseclick()=1 or inkey$()<>"" : repeat : until mouseclick()<>1 and inkey$()=""
+         exit
+         endif
+
+      read string 1, string_lida$
+      gosub PROCURA_PALAVRAS
+
+      text 300,20, "Lendo arquivo ... ["+str$(num_linhas)+ " linhas]"
+      inc num_linhas
+   loop
+   close file 1
+
+   x=50 : y=100 : count_2=0
+   print "Trecho escrito para resolução de 1024x768x16"
+   for count=0 to num_palavras
+      inc count_2
+      if count_2>15
+         count_2=1
+         y = 100
+         inc x, 100
+      endif
+      if x>400 then x=50 : repeat : if mouseclick()=2 : count=num_palavras : exit: endif :until mouseclick()=1 or inkey$()<>"" : repeat : until mouseclick()<>1 and inkey$()="" : cls
+      set cursor x, y
+      print palavras$(count)
+      inc y, 15
+   next count
+
+   save array "palavras.txt",palavras$(0)
+   text 50, 450, "num_linhas: " + str$(num_linhas) + " num_palavras: " + str$(num_palavras)
+   if erro$<>"" then text 50, 465, erro$
+   text 50, 480, "Palavras salvas em Arquivo: palavras.txt"
+   repeat : until mouseclick()=1 or inkey$()<>""
+   repeat : until mouseclick()<>1 and inkey$()=""
+   return
+
+PROCURA_PALAVRAS:
+rem procurando espacos ou simbolos
+final_da_ultima_palavra=1
+for caractere=1 to len(string_lida$)
+   if array count(palavras$(0))>num_palavras
+      if mid$(string_lida$,caractere)=" "
+         for posicao=final_da_ultima_palavra to caractere-1
+            palavras$(num_palavras)=palavras$(num_palavras)+mid$(string_lida$,posicao)
+         next posicao
+         final_da_ultima_palavra=caractere+1
+         inc num_palavras
+      endif
+      if caractere=len(string_lida$)
+         for posicao=final_da_ultima_palavra to caractere+1
+            palavras$(num_palavras)=palavras$(num_palavras)+mid$(string_lida$,posicao)
+         next posicao
+         final_da_ultima_palavra=caractere
+         inc num_palavras
+      endif
+   else
+      erro$ = "ERRO: Encheu o array das palavras."
+   endif
+next caractere
+return
+
+rem =======================================================================
+TESTA_SYS_DLL:
+REM Projeto: DLL_hacker_call
+
+remstart
+DLL CALL EXIST
+Este comando determina se uma função chamada existe em uma DLL que já foi carregada.
+O Número da DLL deve ser um valor do tipo inteiro entre 1 e 256.
+O Número da DLL especifica uma DLL previamente carregada e a Função String descreve o nome da função na sua DLL.
+Se a função existir, um valor inteiro igual a 1 (um) é retornado, caso contrário o valor é 0 (zero).
+
+SINTAXE: Return Integer=DLL CALL EXIST(Número da DLL, Nome da Função)
+remend
+
+cls
+set cursor 50,50
+INPUT "Digite o nome da dll que deseja escanear: ",dll_name$
+
+rem REMOVER ISTO NA VERSAO FINAL
+rem dll_name$ = "d3drm.dll"
+dll_name$ = "dx8vb.dll"
+
+if dll_name$="" then goto TESTA_SYS_DLL
+LOAD DLL dll_name$, 1
+
+remstart
+DLL EXIST
+Este comando determina se uma DLL foi carregada com sucesso.
+O Número da DLL deve ser um valor do tipo inteiro entre 1 e 256.
+Se a DLL existir, um valor do tipo inteiro é retornado, caso contrário o valor retornado é 0 (zero).
+
+SINTAXE: Return Integer=DLL EXIST(Número da DLL)
+remend
+
+if DLL EXIST(1)=1
+rem endif só no final
+
+set cursor 50,70
+INPUT "Qual deve ser o tamanho maximo da palavra: [1 - 6]",comprimento_max
+if comprimento_max=0 then comprimento_max = 6
+
+rem testar somente: letras 26 : numeros 10 : simbolos 2 ["_- " underline,traco,espaco] : total 38 [deu 40 ???]
+caracteres_alfa$="abcdefghijklmnopqrstuvwxyz"
+caracteres_num$="0123456789"
+caracteres_esp$=" _-"
+
+INPUT_SYS_DLL:
+
+LOOP_SET_CONJ_CARC_SYS_DLL:
+do
+cls
+set cursor 50,90
+print "Digite os numeros das opcoes que desja ativar"
+set cursor 50,105
+print "Tipo de caracteres a serem testados: [1=alfa, 2=num, 3=esp]"
+
+if ativa_alfa=1
+      set cursor 500,115
+      print "ATIVA alfa"
+      endif
+if ativa_num=1
+      set cursor 500,130
+      print "ATIVA num"
+      endif
+if ativa_esp=1
+      set cursor 500,145
+      print "ATIVA esp"
+      endif
+
+if ativa_alfa=0
+      set cursor 500,115
+      print "                "
+      endif
+if ativa_num=0
+      set cursor 500,130
+      print "                "
+      endif
+if ativa_esp=0
+      set cursor 500,145
+      print "                "
+      endif
+
+   if scancode()=2
+      if ativa_alfa=0
+         ativa_alfa=1
+         else
+         ativa_alfa=0
+         endif
+      sleep 100
+   endif
+
+   if scancode()=3
+      if ativa_num=0
+         ativa_num=1
+         else
+         ativa_num=0
+         endif
+      sleep 100
+   endif
+
+   if scancode()=4
+      if ativa_esp=0
+         ativa_esp=1
+         else
+         ativa_esp=0
+         endif
+      sleep 100
+   endif
+
+   if scancode()=11
+      ativa_esp=0
+      ativa_num=0
+      ativa_alfa=0
+   endif
+
+   if escapekey()=1 then goto ABORT_SYS_DLL
+
+   rem espaco
+   if scancode()=57
+      if ativa_alfa=1
+         conjunto_caracteres$=caracteres_alfa$
+         else
+         conjunto_caracteres$=""
+         endif
+
+      if ativa_num=1
+         conjunto_caracteres$=conjunto_caracteres$+caracteres_num$
+         else
+         conjunto_caracteres$=conjunto_caracteres$
+         endif
+
+      if ativa_esp=1
+         conjunto_caracteres$=conjunto_caracteres$+caracteres_esp$
+         else
+         conjunto_caracteres$=conjunto_caracteres$
+         endif
+      if ativa_alfa=0 and ativa_num=0 and ativa_esp=0 then goto LOOP_SET_CONJ_CARC_SYS_DLL
+      set cursor 50,130
+      goto PRONTO_CONJUNTO_DE_CARACTERES_SYS_DLL
+   endif
+   sync
+loop
+
+PRONTO_CONJUNTO_DE_CARACTERES_SYS_DLL:
+
+comprimento_da_cadeia=len(conjunto_caracteres$)
+
+numero_de_combinacoes=comprimento_da_cadeia
+for n=1 to comprimento_max-1
+   numero_de_combinacoes=numero_de_combinacoes*comprimento_da_cadeia
+next n
+
+DIM tabela_caracteres$(50)
+
+rem usar isto para preencher a tabela_caracteres$
+rem Exibe o conjunto de caracteres que sera utilizado
+set cursor 50, 150
+print "Conjunto de caracteres que sera utilizado:"
+cursor_baixo=155
+cursor_lado=50
+for posicao_caractere=1 to comprimento_da_cadeia
+
+   rem acerta posicao do cursor
+   cursor_baixo=cursor_baixo+15
+   if cursor_baixo>400 then cursor_lado=cursor_lado+170
+   if cursor_baixo>400 then cursor_baixo=170
+   if cursor_lado>640 then suspend for key
+   if cursor_lado>640 then cls
+   if cursor_lado>640 then cursor_lado=50
+
+   set cursor cursor_lado, cursor_baixo
+   print "Caractere ", posicao_caractere, " : ", mid$(conjunto_caracteres$,posicao_caractere)
+
+   tabela_caracteres$(posicao_caractere)=mid$(conjunto_caracteres$,posicao_caractere)
+next posicao_caractere
+
+save array "array.txt",tabela_caracteres$(0)
+set cursor 20,460
+print "Arquivo salvo: array.txt"
+
+suspend for key
+
+posicao_cursor_baixo = 100
+
+for a=1 to comprimento_da_cadeia
+for b=1 to comprimento_da_cadeia
+for c=1 to comprimento_da_cadeia
+for d=1 to comprimento_da_cadeia
+for e=1 to comprimento_da_cadeia
+for f=1 to comprimento_da_cadeia
+posicao_cursor_baixo = posicao_cursor_baixo + 15
+count = count + 1
+total = total + 1
+if count > 20
+   count = 0
+   posicao_cursor_baixo = 100
+   cls
+   print "Testando dll: ",dll_name$,
+   print "Tamanho max. da palavra: ", comprimento_max
+   print "Combinacoes testadas: ",total
+   print "[", numero_de_combinacoes, " de combinações]"
+endif
+
+combinacao$=tabela_caracteres$(a)+tabela_caracteres$(b)+tabela_caracteres$(c)+tabela_caracteres$(d)+tabela_caracteres$(e)+tabela_caracteres$(f)
+if DLL CALL EXIST(1, combinacao$)=1 then goto SEQUENCIA_ENCONTRADA_SYS_DLL
+
+set cursor 100,posicao_cursor_baixo
+print a," - ",b," - ",c," - ",d," - ",e," - ",f
+
+set cursor 400,posicao_cursor_baixo
+print combinacao$
+
+if escapekey()=1 then goto ABORT_SYS_DLL
+sync
+
+next f
+next e
+next d
+next c
+next b
+next a
+
+print
+print "Não foi encontrada uma entrada na DLL com a pesquisa efetuada."
+
+goto FIM_SYS_DLL
+
+ABORT_SYS_DLL:
+   print
+   print "[Pesquisa cancelada! ]"
+   goto FIM_SYS_DLL
+
+SEQUENCIA_ENCONTRADA_SYS_DLL:
+
+   print "Sequencia: ", combinacao$
+   print "Encontrada na dll: ",dll_name$
+   print "A sequencia esta no CLIPBOARD."
+   WRITE TO CLIPBOARD combinacao$
+
+   rem isto fecha "senao" la de cima
+   else
+      set cursor 50,200
+      print "DLL não pode ser carregada: ", dll_name$
+      goto FIM_SYS_DLL
+   endif
+
+FIM_SYS_DLL:
+   DELETE DLL 1
+   print "Press. Space Key to continue"
+   suspend for key
+
+   goto MENU_PRINCIPAL
+
+rem =======================================================================
+EXPLORE_FILES:
+sync on : sync rate 0 : backdrop on
+
+      menu_nivel = 3
+      sai_pro_menu_nivel = menu_nivel
+      gosub OBTEM_ARQUIVOS_EXPLORER
+      text_y = 70
+do
+      rem cls rgb(red,blue,green)
+      text 50, 50, "Explorando Arquivos [now in 3d]"
+      if mousex() < 500 and mousex() > 400 and mousey() < 55 and mousey() > 45 then text 400, 50, "OPCÕES" else text 400, 50, "Opcões"
+      if mousex() < 600 and mousex() > 500 and mousey() < 55 and mousey() > 45 then text 500, 50, "TESTE"  else text 500, 50, "Teste"
+      text 50, 70, "Path: " + get dir$()
+      rem gosub EXIBE_ARQUIVOS_EXPLORER
+      gosub DETECTA_ARQUIVO_SELECIONADO_EXPLORER
+      gosub INFO_SCREEN
+      if mouseclick()=4 then : position mouse screen width()/2, screen height()/2: position mouse screen width()/2, screen height()/2 : gosub CONTROLA_CAMERA
+
+      if mouseclick()=2 then repeat : until mouseclick()<>2 : gosub MENU_TAB_EXPLORE
+      if escapekey()=1  then repeat : until escapekey()<>1 : exit
+      if mouseclick()=1
+         rem repeat : until mouseclick()<>1
+         if mousex() < 400 and mousex() > 300 and mousey() < 55 and mousey() > 45 then gosub OPCOES_EXPLORER
+         if mousex() < 500 and mousex() > 400 and mousey() < 55 and mousey() > 45 then gosub TESTES_EXPLORER
+      ENDIF
+      if sai_pro_menu_nivel < menu_nivel
+         exit
+      else
+         sai_pro_menu_nivel = menu_nivel
+      endif
+
+      sync
+      rem sync por que quero para o pisca    [ainda nao deu] [AGORA DEU]
+loop
+return
+   DETECTA_ARQUIVO_SELECIONADO_EXPLORER:
+      for num_obj = 1 to num_files
+         if mousex() < object screen x(num_obj)+50 and mousex() > object screen x(num_obj)-50 and mousey() < object screen y(num_obj)+50 and mousey() > object screen y(num_obj)-50
+            Rotate_Object(num_obj, 3.0)
+            print_info_mouse(files$(num_obj, 1))
+            print_info(str$(num_obj)+ " " + files$(num_obj, 3)+ " "+ files$(num_obj, 1))
+            if mouseclick()=1
+               Rotate_Object(num_obj, 4.0)
+               print_info("Click "+str$(num_obj))
+               repeat : until mouseclick()<>1
+               if files$(num_obj,3) = "Pasta"
+                  set dir files$(num_obj,1)
+                  gosub OBTEM_ARQUIVOS_EXPLORER
+               else
+                  if lower$(right$(files$(num_obj,1), 3))="txt"
+                     nome_do_arquivo$ = files$(num_obj,1)
+                     gosub ABRE_ARQUIVO_TXT_EXPLORER
+                  endif
+                  if lower$(right$(files$(num_obj,1), 3))="bmp" or lower$(right$(files$(num_obj,1), 3))="jpg"
+                     AbreImagemExplorer(files$(num_obj,1), cpx#, cpy#, cpz#, cax#, cay#, caz#)
+                  endif
+               endif
+            endif
+         else
+            Rotate_Object(num_obj, -3.0)
+         endif
+      next num_obj
+   return
+
+function AbreImagemExplorer(file$, cpx#, cpy#, cpz#, cax#, cay#, caz#)
+                  rem sync off : sync rate 0: backdrop off
+                  make object box 300, 30, 20, 3
+                  load bitmap file$, 1
+                  if BITMAP HEIGHT(1) > GET MAXIMUM TEXTURE HEIGHT() then bitmap_height = GET MAXIMUM TEXTURE HEIGHT() else bitmap_height = BITMAP HEIGHT(1)
+                  if BITMAP WIDTH(1)  > GET MAXIMUM TEXTURE WIDTH()  then bitmap_width =  GET MAXIMUM TEXTURE WIDTH()  else bitmap_width  = BITMAP WIDTH(1)
+                  get image 200, 0, 0, bitmap_width ,bitmap_height
+                  delete bitmap 1
+                  texture object 300,200
+                  position object 300, cpx#, cpy#, cpz# + 50
+                  Rotate Camera cax#, cay#, caz#
+                  Position camera cpx#, cpy#, cpz#
+                  rem gosub SET_CAM_POS
+                  repeat
+                     rem cls:  position mouse screen width()/2, screen height()/2: position mouse screen width()/2, screen height()/2 : gosub CONTROLA_CAMERA
+                     sync
+                  until mouseclick()=1:repeat : until mouseclick()<>1
+                  delete object 300
+                  delete image 200
+endfunction
+
+ABRE_ARQUIVO_TXT_EXPLORER:
+   sync off : sync rate 0: backdrop off
+   open to read 1, nome_do_arquivo$
+   num_linhas_max = (screen height()-100 )/20
+   num_linhas_total = 0
+      u_l_c_x = screen width()/2
+      u_l_c_y = 50
+      lado_r_x = u_l_c_x + u_l_c_x - 50
+      lado_r_y = screen height()-50
+      box u_l_c_x, u_l_c_y, lado_r_x, lado_r_y, 255, 255 ,255 ,255
+   do
+      inc num_linhas_total
+      if num_linhas >= num_linhas_max
+         print_info("Lendo arquivo ... [Pause]")
+         repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+         box u_l_c_x, u_l_c_y, lado_r_x, lado_r_y, 255, 255 ,255 ,255
+         num_linhas = 0
+      endif
+      if file end(1)
+         print_info("Lendo arquivo ... [CONCLUIDO]")
+         repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+         exit
+      endif
+      if escapekey()=1
+         print_info("Lendo arquivo ... [CANCELADO]")
+         repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+         exit
+      endif
+
+      read string 1, string_lida$
+      text u_l_c_x ,u_l_c_y + (num_linhas * 20), string_lida$
+
+      print_info("Lendo arquivo ...                    ["+str$(num_linhas_total)+ " linhas]")
+      inc num_linhas
+   loop
+   close file 1
+      sync on : sync rate 0: backdrop on
+
+return
+
+   MENU_TAB_EXPLORE:
+      u_l_c_x = mousex()
+      u_l_c_y = mousey()
+      lado_r_x = u_l_c_x + 175
+      lado_r_y = u_l_c_y + 200
+      do
+         box u_l_c_x, u_l_c_y, lado_r_x, lado_r_y, 255, 0 ,0 ,255
+         print_info("                                                ")
+         if mousex() < lado_r_x and mousex() > u_l_c_x and mousey() < u_l_c_y+50 and mousey() > u_l_c_y then      text u_l_c_x+10, u_l_c_y + 25, "SALVA_CONF_CAM" : print_info("SALVA_CONF_CAM") : else text u_l_c_x+10, u_l_c_y + 25, "Salva Conf. Cam."
+         if mousex() < lado_r_x and mousex() > u_l_c_x and mousey() < u_l_c_y+100 and mousey() > u_l_c_y+50 then  text u_l_c_x+10, u_l_c_y + 75, "POS 2" : print_info("Mouse over: pos 2")       : else text u_l_c_x+10, u_l_c_y + 75, "pos 2"
+         if mousex() < lado_r_x and mousex() > u_l_c_x and mousey() < u_l_c_y+150 and mousey() > u_l_c_y+100 then text u_l_c_x+10, u_l_c_y + 125, "SAIR DO EXPLORER" : print_info("SAIR DO EXPLORER")        : else text u_l_c_x+10, u_l_c_y + 125, "Sair do explorer"
+         if mousex() < lado_r_x and mousex() > u_l_c_x and mousey() < u_l_c_y+200 and mousey() > u_l_c_y+150 then text u_l_c_x+10, u_l_c_y + 175, "CANCELAR" : print_info("CANCELAR")            : else text u_l_c_x+10, u_l_c_y + 175, "Cancelar"
+      for num_obj = 1 to num_files
+         if mousex() < object screen x(num_obj)+50 and mousex() > object screen x(num_obj)-50 and mousey() < object screen y(num_obj)+50 and mousey() > object screen y(num_obj)-50
+            if mousex() < lado_r_x and mousex() > u_l_c_x and mousey() < u_l_c_y+250 and mousey() > u_l_c_y+200 then text u_l_c_x+10, u_l_c_y + 225, "OPEN" : print_info("ABRIR")            : else text u_l_c_x+10, u_l_c_y + 225, "open"
+         endif
+      next num_obj
+         if mouseclick()=2 then exit
+         if mouseclick()=1
+            repeat : until mouseclick()<>1
+            click_fora = 1
+            if mousex() < lado_r_x and mousex() > u_l_c_x and mousey() < u_l_c_y+50 and mousey() > u_l_c_y     then print_info("Mouse click: pos 1")  : click_fora = 0 : gosub SALVA_CONF_CAM
+            if mousex() < lado_r_x and mousex() > u_l_c_x and mousey() < u_l_c_y+100 and mousey() > u_l_c_y+50 then print_info("Mouse click: pos 2")  : click_fora = 0
+            if mousex() < lado_r_x and mousex() > u_l_c_x and mousey() < u_l_c_y+150 and mousey() > u_l_c_y+100 then print_info("Mouse click: pos 3") : click_fora = 0 : sai_pro_menu_nivel = 2 : exit
+            if mousex() < lado_r_x and mousex() > u_l_c_x and mousey() < u_l_c_y+200 and mousey() > u_l_c_y+150 then print_info("Mouse click: pos 4") : click_fora = 0 : EXIT
+            if click_fora = 1 then exit
+         endif
+         sync
+      loop
+   return
+
+   OBTEM_ARQUIVOS_EXPLORER:
+      repeat : until mouseclick()<>1
+      rem limpando o array dos arquivos
+                  for b=0 to 10
+                     for a=0 to 200
+                        files$(a,b) = ""
+                     next a
+                  next b
+      rem Deletando TODOS os objetos 3d
+                  for b=1 to num_files
+                     if object exist(b)=1 then delete object b
+                  next b
+      remstart Deletando TODAS as images
+                  for b=1 to num_files
+                     if image exist(b) = 1 then delete image b
+                  next b remend
+      find first
+      file = 0
+      repeat
+         rem Preenche o array com os dados dos arquivos da pasta atual
+         inc file
+         if file =< numero_limite_arquivos
+            files$(file,1) = get file name$()
+            files$(file,2) = get file date$()
+            rem files$(file,4) = str$(text_y)
+
+            if get file type()=0
+               files$(file,3) = "Arquivo"
+            else
+               files$(file,3) = "Pasta"
+            endif
+         else
+            rem file = numero_limite_arquivos
+            erro("Erro: numero_limite_arquivos alcançado: " + str$(numero_limite_arquivos) +" : "+ str$(file))
+         endif
+         find next
+      until get file type()=-1
+      if file > numero_limite_arquivos then file = numero_limite_arquivos
+      num_files_array = file
+      num_files = file
+      gosub OBTEM_3D_ARQUIVOS_EXPLORER
+      return
+
+   OBTEM_ARQUIVOS_EXPLORER_3d:
+   OBTEM_3D_ARQUIVOS_EXPLORER:
+      numero_objeto = 1
+      for file = 1 to num_files
+         while object exist(numero_objeto) = 1
+            inc numero_objeto
+         endwhile
+         make object box numero_objeto, 30, 20, 3
+         if files$(file,3)="Arquivo" then texture object numero_objeto, 2
+         if files$(file,3)="Pasta" then   texture object numero_objeto, 1
+         rem Associando objeto ao arquivo:
+         files$(file,4) = str$(numero_objeto)
+      next file
+      gosub EXIBE_ARQUIVOS_EXPLORER_3D
+   return
+
+   EXIBE_ARQUIVOS_EXPLORER:
+      rem Exibe o array com os dados dos arquivos da pasta atual
+      if num_files_array * 20 > screen height() then num_files = int(screen height()/20) : tem_mais = 1
+
+      for file = 1 to num_files
+         inc text_y, 20
+         if mousey() < (text_y + 5) and mousey() > (text_y - 5)
+            box 48, text_y, text width (files$(file,1)) + 60, text_y + text height (files$(file,1)), 255, 255, 255, 255
+            text 50, text_y, "[" + files$(file,1)+"]"
+         else
+            text 50, text_y, files$(file,1)
+         endif
+         text 200, text_y, files$(file,2)
+         text 400, text_y, files$(file,3)
+         if mouseclick()=1 and mousey() < (text_y + 5) and mousey() > (text_y - 5)
+            print_info("Click: File " + str$(file) + " " + files$(file,1))
+            if files$(file,3) = "Pasta"
+               set dir files$(file,1)
+               for b=0 to 10
+                  for a=0 to 200
+                     files$(a,b) = ""
+                  next a
+               next b
+               gosub OBTEM_ARQUIVOS_EXPLORER
+            endif
+         endif
+      next file
+   return
+
+   EXIBE_ARQUIVOS_EXPLORER_3D:
+      pos_x = 0
+      for file = 1 to num_files
+         inc pos_x, 10
+         if object exist(file)=1 then position object file, pos_x, pos_x-5, pos_x-7
+      next file
+      gosub SET_CAM_POS
+   return
+
+   OPCOES_EXPLORER:
+      do
+          cls rgb(red,blue,green)
+         text 50, 50, "Opcoes do explorer:"
+
+            if mousex() < 500 and mousex() > 400 and mousey() < 105 and mousey() > 95 then text 450, 100, "[red] "+str$(red_f) : red_f = red_f + int(mousemovez()*0.1) : else text 450, 100, "red "+str$(red_f)
+            if mousex() < 400 and mousex() > 300 and mousey() < 105 and mousey() > 95 then text 350, 100, "[blue] "+str$(blue_f) : blue_f = blue_f + int(mousemovez()*0.1): else text 350, 100, "blue "+str$(blue_f)
+            if mousex() < 300 and mousex() > 200 and mousey() < 105 and mousey() > 95 then text 250, 100, "[green] "+str$(green_f) : green_f = green_f + int(mousemovez()*0.1) : else text 250, 100, "green "+str$(green_f)
+         if mousex() < 200 and mousex() > 50 and mousey() < 105 and mousey() > 95 then text 50, 100, "[Cor Fundo:]" : else text 50, 100, "Cor Fundo:"
+
+         if mousex() < 200 and mousex() > 50 and mousey() < 125 and mousey() > 115 then text 50, 120, "[Cor da Área de Trabalho:]" else text 50, 120, "Cor da Área de Trabalho:"
+            if mousex() < 500 and mousex() > 400 and mousey() < 125 and mousey() > 115 then text 450, 120, "[red] "+str$(red) : red = red + int(mousemovez()*0.1) : else text 450, 120, "red "+str$(red)
+            if mousex() < 400 and mousex() > 300 and mousey() < 125 and mousey() > 115 then text 350, 120, "[blue] "+str$(blue) : blue = blue + int(mousemovez()*0.1): else text 350, 120, "blue "+str$(blue)
+            if mousex() < 300 and mousex() > 200 and mousey() < 125 and mousey() > 115 then text 250, 120, "[green] "+str$(green) : green = green + int(mousemovez()*0.1) : else text 250, 120, "green "+str$(green)
+
+         ink rgb(red_f,blue_f,green_f),rgb(red,blue,green)
+
+         if mouseclick()=2
+            repeat : until mouseclick()<>2
+            configuracoes("salva","red",str$(red))
+            configuracoes("salva","blue",str$(blue))
+            configuracoes("salva","green",str$(green))
+            configuracoes("salva","red_f",str$(red_f))
+            configuracoes("salva","blue_f",str$(blue_f))
+            configuracoes("salva","green_f",str$(green_f))
+            exit
+         endif
+      loop
+   return
+
+   TESTES_EXPLORER:
+      repeat
+         inc numero_objeto
+      until object exist(numero_objeto)<>1
+      make object box numero_objeto, 30, 20, 3
+      num_obj_box_1 = numero_objeto
+      load bitmap "texturas\fold.bmp", 1
+      get image 2, 0, 0, 102, 118
+      delete bitmap 1
+      texture object num_obj_box_1, 2
+      do
+         cls
+         ShowObjs_Pos(num_obj_box_1)
+         info_input(SrXTxt, "mouse$", "scancod$")
+         if mouseclick()=4
+            rem gosub GET_CAM_ANG
+            gosub CONTROLA_CAMERA
+         endif
+         if mouseclick()=1
+            if mousex() < object screen x(num_obj_box_1)+50 and mousex() > object screen x(num_obj_box_1)-50 and mousey() < object screen y(num_obj_box_1)+50 and mousey() > object screen y(num_obj_box_1)-50
+               Rot# = Rotate_Object(num_obj_box_1, Rot#)
+               print_info("Clicou em obj "+str$(num_obj_box_1))
+               repeat : until mouseclick()<>1
+            endif
+         endif
+         if mouseclick()=2 then repeat : until mouseclick()<>2 : exit
+         sync
+      loop
+   return
+
+   function unt(unt#)
+      unt#= wrapvalue(unt# + 10.0)
+   endfunction unt#
+
+   function Rotate_Object(Objs, Rot#)
+      if object exist(Objs)
+         rem Rotaciona e soma ang. dos Objs na tela
+         Rot# = wrapvalue(Rot# + 1.0)
+         rotate object Objs, 0, Rot#, 0
+      else
+         erro$ = "Erro: Não existe objeto: " + str$(Objs)
+      endif
+   endfunction Rot#
+
+   function ShowObjs_Pos(Objs)
+      if object exist(Objs)
+         rem Mostra infos pos Objs na tela
+         text screen width() - 100, screen height() - 200,  "PObjY "+str$(object screen y(Objs))
+         text screen width() - 100, screen height() - 185 , "PObjX "+str$(object screen x(Objs))
+      else
+         erro$ = "Erro: Não existe objeto: " + str$(Objs)
+      endif
+   endfunction erro$
+rem =======================================================================
+
+TESTA_COMMAND:
+   set text font "courier new"
+   set text size 20
+   cls
+
+   mensagem_na_linha$="    Welcome to command line interface v.1.0"
+   gosub PrintM
+   mensagem_na_linha$="      Runing on program file "
+   gosub PrintM
+   mensagem_na_linha$="   " + appname$()
+   gosub PrintM
+
+remstart
+
+input "    Password: ", password$
+
+if password$<>"carlos" THEN goto TESTA_COMMAND
+remend
+
+if password$=""
+   prompt$="COMMAND : "
+   else
+   prompt$=password$ + "@CMD : "
+   endif
+
+INPUT_2_COMMAND:
+comando_na_linha$=""
+do
+   if escapekey()=1 then goto FIM_COMMAND
+
+   if returnkey()=0
+   rem =========================================
+      if scancode()=14
+         if len(comando_na_linha$)>0
+            antiga_linha$=comando_na_linha$
+            comando_na_linha$=""
+            for caractere=1 to len(antiga_linha$)-1
+               comando_na_linha$=comando_na_linha$ + mid$(antiga_linha$, caractere)
+            next caractere
+         endif
+      else
+         if inkey$()<>""
+            comando_na_linha$=comando_na_linha$+inkey$()
+         endif
+      endif
+   rem =========================================
+   else
+      mensagem_na_linha$=comando_na_linha$
+      gosub PrintM
+      gosub IDENTIFICA_COMMAND
+      comando_na_linha$=""
+   endif
+
+   gosub PrintT
+   print "CMD: ", comando_na_linha$
+   sleep 70
+   sync
+loop
+goto INPUT_2_COMMAND
+
+PrintM:
+      inc num_linhas
+      tabela_linhas$(num_linhas)= mensagem_na_linha$
+   gosub PrintT
+return
+
+PrintT:
+   cls
+   if num_linhas > 20
+      for count_line=20 to 0 step -1
+         rem "[", count_line, "] ",
+         print tabela_linhas$(num_linhas-count_line)
+      next count_line
+   else
+      for count_line=num_linhas to 0 step -1
+         print tabela_linhas$(num_linhas-count_line)
+      next count_line
+   endif
+RETURN
+
+INPUT_COMMAND:
+   rem prompt$ = prompt$ + str$(num_mensagens)+ " : "
+
+   print
+   input prompt$, comando_na_linha$
+   print
+
+   rem para resolver problemas
+   rem ,comando$,comando$,comando$,comando$
+   mensagen1$=comando$
+
+   rem num_mensagens = PrintX(comando$, num_mensagens)
+
+   gosub IDENTIFICA_COMMAND
+   if escapekey()=1                 then goto EXIT_COMMAND
+   goto INPUT_COMMAND
+
+IDENTIFICA_COMMAND:
+comando$ = comando_na_linha$
+
+   if comando$ = "dir"              then goto DIR_COMMAND
+   if comando$ = "drivelist"        then goto DRIVELIST_COMMAND
+   if comando$ = "set_dir"          then goto SET_DIR_COMMAND
+   if comando$ = "make_file"        then goto MAKE_FILE_COMMAND
+   if comando$ = "make_directory"   then goto MAKE_DIRECTORY_COMMAND
+   if comando$ = "delete_file"      then goto DELETE_FILE_COMMAND
+   if comando$ = "delete_directory" then goto DELETE_DIRECTORY_COMMAND
+   if comando$ = "copy_file"        then goto COPY_FILE_COMMAND
+   if comando$ = "move_file"        then goto MOVE_FILE_COMMAND
+   if comando$ = "rename_file"      then goto RENAME_FILE_COMMAND
+   if comando$ = "execute_file"     then goto EXECUTE_FILE_COMMAND
+   if comando$ = "find_first"       then goto FIND_FIRST_COMMAND
+   if comando$ = "find_next"        then goto FIND_NEXT_COMMAND
+   if comando$ = "cd"               then goto CD_COMMAND
+
+   if comando$ = "file_exist"       then goto FILE_EXIST_COMMAND
+   if comando$ = "path_exist"       then goto PATH_EXIST_COMMAND
+   if comando$ = "get_dir"          then goto GET_DIR_COMMAND
+   if comando$ = "appname"          then goto APPNAME_COMMAND
+   if comando$ = "windir"           then goto WINDIR_COMMAND
+
+   if comando$ = "cls"              then goto CLS_COMMAND
+
+   if comando$ = "exibe_arquivos"   then goto EXIBE_ARQUIVOS
+   if comando$ = "procura_arquivo"  then goto PROCURA_ARQUIVO_COMMAND
+   if comando$ = "help"             then goto HELP_COMMAND
+   if comando$ = "exit"             then goto EXIT_COMMAND
+
+   if comando$ = "" then RETURN
+      mensagem_na_linha$="            Comando inválido.   "
+      gosub PrintM
+
+   wait key
+   RETURN
+
+CLS_COMMAND:
+   cls
+   goto INPUT_COMMAND
+
+DIR_COMMAND:
+   DIR
+   rem Testar para muitos arquivos se passa da tela
+   goto INPUT_COMMAND
+
+DRIVELIST_COMMAND:
+   rem Testar para muitos drives se passa da tela
+   DRIVELIST
+   goto INPUT_COMMAND
+
+SET_DIR_COMMAND:
+   pasta_atual$=get dir$()
+   input "Entre com o novo caminho completo ou relativo para o diretorio atual: ", diretorio$
+   if diretorio$="" then Print "Operação cancelada." : goto INPUT_COMMAND
+
+   rem fazer busca na string diretorio$ para checar se existe um ":" [caminho completo]
+
+   if path exist(diretorio$)=0 and path exist(pasta_atual$+"\"+diretorio$)=0 then print "A pasta especificada não existe." : goto INPUT_COMMAND
+
+   set dir diretorio$
+
+   rem verificar se mudou : Mudar o prompt$
+   if get dir$()=pasta_atual$+"\"+diretorio$
+      print "Pasta mudada: ", pasta_atual$, "\", diretorio$
+      prompt$="\"+diretorio$
+   else
+      print "Pasta nao mudada: ", pasta_atual$
+   endif
+   goto INPUT_COMMAND
+
+MAKE_FILE_COMMAND:
+
+   print "Este comando irá criar um arquivo vazio."
+   input "Entre com um nome: ", nome_arquivo$
+   if nome_arquivo$="" then Print "Operação cancelada." : goto INPUT_COMMAND
+
+   if file exist(nome_arquivo$)=1 then print "O arquivo especificado já existe.": goto INPUT_COMMAND
+   make file nome_arquivo$
+
+   if file exist(nome_arquivo$)=1
+      print "Arquivo ", nome_arquivo$, "criado com sucesso."
+   else
+      print "Arquivo ", nome_arquivo$, "não pôde ser criado."
+   endif
+   goto INPUT_COMMAND
+
+MAKE_DIRECTORY_COMMAND:
+
+   print "Este comando irá criar um diretório vazio."
+   input "Entre com um nome: ", nome_diretorio$
+   if nome_diretorio$="" then Print "Operação cancelada." : goto INPUT_COMMAND
+
+   if path exist(nome_diretorio$)=1 then print "A pasta especificada já existe.": goto INPUT_COMMAND
+   make directory nome_diretorio$
+   rem Verificar se existe : com path e sem path
+   if path exist(nome_diretorio$)=0
+      print "A pasta especificada não pôde ser criada."
+   else
+      print "A pasta criada com sucesso."
+   endif
+   goto INPUT_COMMAND
+
+DELETE_FILE_COMMAND:
+
+   print "Este comando irá apagar um arquivo existente."
+   input "Entre com um nome: ", nome_arquivo$
+   if nome_arquivo$="" then Print "Operação cancelada." : goto INPUT_COMMAND
+
+   if file exist(nome_arquivo$)=0 then print "O arquivo especificado não existe.": goto INPUT_COMMAND
+   delete file nome_arquivo$
+
+   if file exist(nome_arquivo$)=1
+      print "O arquivo ", nome_arquivo$, " não pôde ser excluído."
+   else
+      print "Arquivo ", nome_arquivo$, " excuído com sucesso."
+   endif
+   goto INPUT_COMMAND
+
+DELETE_DIRECTORY_COMMAND:
+   input "Informe nome da pasta a deletar: ", diretorio$
+   if diretorio$="" then Print "Operação cancelada." : goto INPUT_COMMAND
+   if path exist(diretorio$)=0 then print "A pasta especificada não existe.": goto INPUT_COMMAND
+
+   delete directory diretorio$
+
+   rem Verificar se excluiu : com path e sem path
+   if path exist(diretorio$)=1
+      print "A pasta especificada não pôde ser excluida. [em uso ou não vazia]"
+   else
+      print "Pasta excluída com sucesso."
+   endif
+   goto INPUT_COMMAND
+
+COPY_FILE_COMMAND:
+   input "Especifique o arquivo a copiar: ", arquivo_origem$
+   if arquivo_origem$="" then print "Operação cancelada." : goto INPUT_COMMAND
+   if file exist(arquivo_origem$)=0 then print "Operação cancelada: arquivo não existe." : goto INPUT_COMMAND
+
+   input "Especifique nome do arquivo destino: ", arquivo_destino$
+   if arquivo_destino$="" then print "Operação cancelada." : goto INPUT_COMMAND
+   if file exist(arquivo_destino$)=1 then print "Operação cancelada: Já existe um arquivo." : goto INPUT_COMMAND
+
+   copy file arquivo_origem$, arquivo_destino$
+   goto INPUT_COMMAND
+
+MOVE_FILE_COMMAND:
+   input "Especifique o arquivo a mover: ", arquivo_origem$
+   if arquivo_origem$="" then print "Operação cancelada." : goto INPUT_COMMAND
+   if file exist(arquivo_origem$)=0 then print "Operação cancelada: arquivo não existe." : goto INPUT_COMMAND
+
+   input "Especifique novo nome ao arquivo [destino]: ", arquivo_destino$
+   if arquivo_destino$="" then print "Operação cancelada." : goto INPUT_COMMAND
+   if file exist(arquivo_destino$)=1 then print "Operação cancelada: nome já existe." : goto INPUT_COMMAND
+
+   move file arquivo_origem$, arquivo_destino$
+   goto INPUT_COMMAND
+
+RENAME_FILE_COMMAND:
+   input "Especifique o arquivo a renomear: ", arquivo_origem$
+   if arquivo_origem$="" then print "Operação cancelada." : goto INPUT_COMMAND
+   if file exist(arquivo_origem$)=0 then print "Operação cancelada: arquivo não existe." : goto INPUT_COMMAND
+
+   input "Especifique novo nome ao arquivo: ", arquivo_novo_nome$
+   if arquivo_novo_nome$="" then print "Operação cancelada." : goto INPUT_COMMAND
+   if file exist(arquivo_novo_nome$)=1 then print "Operação cancelada: nome já existe." : goto INPUT_COMMAND
+
+   rename file arquivo_origem$, arquivo_novo_nome$
+   goto INPUT_COMMAND
+
+EXECUTE_FILE_COMMAND:
+   input "Especifique o arquivo a executar: ", arquivo$
+   if arquivo$="" then print "Execução cancelada." : goto INPUT_COMMAND
+   if file exist(arquivo$)=0 then print "Execução cancelada: arquivo não existe." : goto INPUT_COMMAND
+   execute file arquivo$, command_line$, diretorio$, flag_espera
+   goto INPUT_COMMAND
+
+FIND_FIRST_COMMAND:
+   find first
+   print "Primeiro arquivo procurado."
+   file_name$=get file name$()
+   file_date$=get file date$()
+   file_type=get file type()
+   goto INPUT_COMMAND
+FIND_NEXT_COMMAND:
+   find next
+   print "Novo arquivo procurado."
+   file_name$=get file name$()
+   file_date$=get file date$()
+   file_type=get file type()
+   goto INPUT_COMMAND
+
+CD_COMMAND:
+   input "Especifique a pasta para mudar: ", diretorio$
+   if diretorio$="" then print "Operacao cancelada." : goto INPUT_COMMAND
+   cd diretorio$
+   goto INPUT_COMMAND
+
+
+FILE_EXIST_COMMAND:
+   input "Entre nome do arquivo que deseja verificar existencia: ", nome_arquivo$
+   if file exist(nome_arquivo$)=1
+      print "Arquivo existe."
+   else
+      print "Arquivo não existe."
+   endif
+   goto INPUT_COMMAND
+PATH_EXIST_COMMAND:
+   input "Entre nome do PATH que deseja verificar existencia: ", nome_path$
+   if path exist(nome_path$)=1
+      print "PATH existe."
+   else
+      print "PATH não existe."
+   endif
+   goto INPUT_COMMAND
+GET_DIR_COMMAND:
+   diretorio_atual$=get dir$()
+   prompt$=diretorio_atual$ + ">"
+   print "A psta de trabalho atual é :"
+   print diretorio_atual$
+   goto INPUT_COMMAND
+APPNAME_COMMAND:
+   print "O nome do executável atual é: "
+   print appname$()
+   goto INPUT_COMMAND
+WINDIR_COMMAND:
+   print "O diretório do Windows é: "
+   print windir$()
+   goto INPUT_COMMAND
+
+EXIBE_ARQUIVOS:
+   find first
+   gosub MOSTRA_ARQUIVO_EXIBE_ARQUIVOS
+   do
+      if rightkey()=1 then gosub MOSTRA_ARQUIVO_EXIBE_ARQUIVOS
+      if leftkey()=1 then goto EXIBE_ARQUIVOS
+      if escapekey()=1 then exit
+   loop
+   goto INPUT_COMMAND
+
+   MOSTRA_ARQUIVO_EXIBE_ARQUIVOS:
+      if get file type()<>-1
+         cls
+         print
+         print " [< reset]  [> proximo item] [ESC sair]"
+         print get dir$()
+         print
+         print "Nome: ", get file name$()
+         print "Data: ", get file date$()
+         if get file type()=0
+            print "Tipo: arquivo"
+         else
+             print "Tipo: pasta"
+         endif
+         find next
+      else
+         find first
+         print "Fim da lista."
+      endif
+      sleep 100
+      return
+   goto INPUT_COMMAND
+
+PROCURA_ARQUIVO_COMMAND:
+   rem função de procurar arquivo
+   input "Entre arquivo a procurar: ", nome_arquivo$
+   if nome_arquivo$="" then print "Procura cancelada." : goto INPUT_COMMAND
+   find first
+      do
+         if get file type()=-1 then print "Não há mais arquivos." : exit
+         if nome_arquivo$=get file name$() then print "Arquivo encontrado na pasta atual." : exit
+         find next
+      loop
+   goto INPUT_COMMAND
+
+HELP_COMMAND:
+   print "Comandos DarkBasic Arquivos: dir, drivelist, set_dir, make_file, make_directory, delete_file;"
+   print "delete_directory, copy_file, move_file, rename_file, execute_file, [find_first, find_next], cd;"
+   PRINT "file_exist, path_exist, get_dir, appname, windir;"
+   PRINT "Comandos gerais: cls;"
+   print "Command line: help, exit, procura_arquivo, exibe_arquivos;"
+   rem WAIT KEY
+   goto INPUT_COMMAND
+
+FIM_COMMAND:
+EXIT_COMMAND:
+   print "[Command line finalizada]"
+   WAIT KEY
+   goto MENU_PRINCIPAL
+
+rem =====================================================================================
+CONFIG_SYS:
+repeat
+   cls
+   text 50, 50, "TESTE DE CONFIGURAÇÕES"
+
+   if mousex()<300 and mousex()>100 and mousey()<120 and mousey()>100 : text 100,110, "(1). RESOLUÇÃO DA TELA" : else : text 100,110, "[1]. Resolução da tela"  : endif
+   if mousex()<300 and mousex()>100 and mousey()<140 and mousey()>120 : text 100,130, "(2). FORMATO DA TELA ["+str$( menu_formato_tela)+"]" : else : text 100,130, "[2]. Formato da tela ["+str$( menu_formato_tela)+"]" : endif
+   if mousex()<300 and mousex()>100 and mousey()<160 and mousey()>140 : text 100,150, "(S). MENU SYNC ["+str$(menu_sync)+"]" : else : text 100,150, "[s]. menu sync ["+str$(menu_sync)+"]" : endif
+   if mousex()<550 and mousex()>300 and mousey()<160 and mousey()>140 : text 300,150, "(C). MOSTRA_CUBO"       : else : text 300,150, "[c]. Mostra cubo"        : endif
+
+   if menu_formato_tela = 1
+      menu_sync = 0
+      text 170,15, "WINDOW "+str$(WINDOW_STATUS)
+
+      if mousex()<300 and mousex()>150 and mousey()<200 and mousey()>180 : text 150,190, "(W). WINDOW "+str$(WINDOW_STATUS): else : text 150,190, "(w). window "+str$(WINDOW_STATUS): endif
+      if mouseclick()=1
+         if mousex()<300 and mousex()>150 and mousey()<200 and mousey()>180 then gosub SET_WINDOW_ON_OFF
+      endif
+   endif
+
+   if menu_sync = 1
+      menu_formato_tela = 0
+      text 170,15, "SYNC RATE ["+str$(SYNC_RATE_STATUS)+"]"
+
+      if mousex()<300 and mousex()>150 and mousey()<200 and mousey()>180 : text 150,190, "(+). SYNC RATE UP"   : else : text 150,190, "(+). sync rate up"   : endif
+      if mousex()<300 and mousex()>150 and mousey()<220 and mousey()>200 : text 150,210, "(-). SYNC RATE DONW" : else : text 150,210, "(-). sync rate donw" : endif
+      if mousex()<300 and mousex()>150 and mousey()<240 and mousey()>220 : text 150,230, "(Y). SYNC [ON/OFF] "+str$(SYNC_STATUS)         : else : text 150,230, "[y]. sync [on/off] "+str$(SYNC_STATUS)         : endif
+      if mousex()<300 and mousex()>150 and mousey()<260 and mousey()>240 : text 150,250, "(F). FASTSYNC [ON/OFF] "+str$(FASTSYNC_STATUS): center text 300,460, "Ativa / desativa FASTSYNC: FASTSYNC_STATUS " : else : text 150,250, "[f]. fastsync [on/off] "+str$(FASTSYNC_STATUS) : endif
+      if mouseclick()=1
+         if mousex()<300 and mousex()>150 and mousey()<200 and mousey()>180 then text 150,190, "(+). SYNC RATE UP (@)" : gosub SYNC_RATE_UP
+         if mousex()<300 and mousex()>150 and mousey()<220 and mousey()>200 then  text 150,210, "(-). SYNC RATE DONW (@)" : gosub SYNC_RATE_DOWN
+         if mousex()<300 and mousex()>150 and mousey()<240 and mousey()>220 then repeat : until mouseclick()<>1 : gosub SYNC_ON_OFF
+         if mousex()<300 and mousex()>150 and mousey()<260 and mousey()>240 then repeat : until mouseclick()<>1 : gosub FAST_SYNC_ON_OFF
+      endif
+   endif
+
+      gosub COMUM_MENUS
+
+   if mouseclick()=1
+      if mousex()<300 and mousex()>100 and mousey()<120 and mousey()>100 then repeat : until mouseclick()<>1 : gosub SCREEN_RES_SYS
+      if mousex()<300 and mousex()>100 and mousey()<140 and mousey()>120 then repeat : until mouseclick()<>1 : gosub TYPE_SCREEN_SYS
+      if mousex()<300 and mousex()>100 and mousey()<160 and mousey()>140 then repeat : until mouseclick()<>1 : gosub ATIVA_MENU_SYNC
+      if mousex()<550 and mousex()>300 and mousey()<160 and mousey()>140 then repeat : until mouseclick()<>1 : gosub ATIVA_CUBO
+   endif
+
+   if scancode()=46 then gosub ATIVA_CUBO
+   if inkey$()="1" then gosub SCREEN_RES_SYS
+   if inkey$()="2" then gosub TYPE_SCREEN_SYS
+   if inkey$()="s" then repeat : until inkey$()<>"s" :gosub ATIVA_MENU_SYNC
+   if scancode()=78 then gosub SYNC_RATE_UP
+   if scancode()=74 then gosub SYNC_RATE_DOWN
+
+   until mouseclick()=2
+   repeat : until mouseclick()<>2
+return
+rem -------------------------------------------------------------------------------------
+SCREEN_RES_SYS:
+   perform checklist for display modes
+   item_da_lista=1
+MOSTRA_SCREEN_RES_SYS:
+   do
+   if item_da_lista < 1 then item_da_lista=1
+   if item_da_lista > CHECKLIST QUANTITY() then item_da_lista=CHECKLIST QUANTITY()
+   cls
+   text 50, 50,  "Encontrado(s) " + str$(CHECKLIST QUANTITY())
+   text 50, 90, "Item " + str$(item_da_lista) + " : " + CHECKLIST STRING$(item_da_lista)
+   text 50, 120, "CHECKLIST VALUE A : " + str$(CHECKLIST VALUE A(item_da_lista))
+   text 50, 140, "CHECKLIST VALUE B : " + str$(CHECKLIST VALUE B(item_da_lista))
+   text 50, 160, "CHECKLIST VALUE C : " + str$(CHECKLIST VALUE C(item_da_lista))
+   text 50, 180, "CHECKLIST VALUE D : " + str$(CHECKLIST VALUE D(item_da_lista))
+
+      if rightkey()=1  then item_da_lista = item_da_lista + 1 : repeat : until rightkey()<>1 : goto MOSTRA_SCREEN_RES_SYS
+      if leftkey()=1   then item_da_lista = item_da_lista - 1 : repeat : until leftkey()<>1 : goto MOSTRA_SCREEN_RES_SYS
+      if returnkey()=1
+         repeat : until returnkey() <> 1
+         SetVideoMode(item_da_lista, 1)
+      endif
+      if escapekey()=1 then repeat : until escapekey()<>1 : exit
+      if mouseclick()=2 then repeat : until mouseclick()<>2 : exit
+   loop
+   empty checklist
+return
+rem -------------------------------------------------------------------------------------
+rem =====================================================================================
+PERFORM_CHECKLIST:
+repeat
+   item_da_lista=1
+   cls
+   text 50, 50, "TESTE DE PERFORM CHECKLIST's"
+
+   if mousex()<300 and mousex()>100 and mousey()<120 and mousey()>100 : text 100,110, "(1). FOR FONTS" : else           : text 100,110, "[1]. For fonts"  : endif
+   if mousex()<300 and mousex()>100 and mousey()<140 and mousey()>120 : text 100,130, "(2). FOR CONTROL DEVICES" : else : text 100,130, "[2]. For control devices" : endif
+   if mousex()<300 and mousex()>100 and mousey()<160 and mousey()>140 : text 100,150, "(3). FOR DRIVES" : else          : text 100,150, "[3]. For drives" : endif
+   if mousex()<300 and mousex()>100 and mousey()<180 and mousey()>160 : text 100,170, "(4). FOR FILES"  : else          : text 100,170, "[4]. For files" : endif
+   if mousex()<300 and mousex()>100 and mousey()<200 and mousey()>180 : text 100,190, "(5). FOR GRAPHICS CARDS"  : else : text 100,190, "[5]. For graphics cards" : endif
+   if mousex()<300 and mousex()>100 and mousey()<220 and mousey()>200 : text 100,210, "(6). FOR DISPLAY MODES"  : else  : text 100,210, "[6]. For display modes" : endif
+   if mousex()<300 and mousex()>100 and mousey()<240 and mousey()>220 : text 100,230, "(7). FOR NET CONNECTIONS" : else : text 100,230, "[7]. For net connections" : endif
+   if mousex()<300 and mousex()>100 and mousey()<260 and mousey()>240 : text 100,250, "(8). FOR NET SESSIONS"  : else   : text 100,250, "[8]. For net sessions" : endif
+   if mousex()<300 and mousex()>100 and mousey()<280 and mousey()>260 : text 100,270, "(9). FOR NET PLAYERS"  : else    : text 100,270, "[9]. For net players" : endif
+   remstart
+      PERFORM CHECKLIST FOR OBJECT LIMBS : PERFORM CHECKLIST FOR OBJECT LIMBS Número do Objeto
+   remend
+   if mouseclick()=1
+      repeat : until mouseclick()<>1
+      only_strings_CHECKLIST = 0
+      if mousex()<300 and mousex()>100 and mousey()<120 and mousey()>100 then PERFORM CHECKLIST FOR FONTS            : only_strings_CHECKLIST = 1 : gosub MOSTRA_CHECKLIST
+      if mousex()<300 and mousex()>100 and mousey()<140 and mousey()>120 then PERFORM CHECKLIST FOR CONTROL DEVICES  : gosub MOSTRA_CHECKLIST
+      if mousex()<300 and mousex()>100 and mousey()<160 and mousey()>140 then PERFORM CHECKLIST FOR DRIVES           : only_strings_CHECKLIST = 1 : gosub MOSTRA_CHECKLIST
+      if mousex()<300 and mousex()>100 and mousey()<180 and mousey()>160 then PERFORM CHECKLIST FOR FILES            : gosub MOSTRA_CHECKLIST
+      if mousex()<300 and mousex()>100 and mousey()<200 and mousey()>180 then PERFORM CHECKLIST FOR GRAPHICS CARDS   : only_strings_CHECKLIST = 1 : gosub MOSTRA_CHECKLIST
+      if mousex()<300 and mousex()>100 and mousey()<220 and mousey()>200 then PERFORM CHECKLIST FOR DISPLAY MODES    : gosub MOSTRA_CHECKLIST
+      if mousex()<300 and mousex()>100 and mousey()<240 and mousey()>220 then PERFORM CHECKLIST FOR NET CONNECTIONS  : only_strings_CHECKLIST = 1 : gosub MOSTRA_CHECKLIST
+      if mousex()<300 and mousex()>100 and mousey()<260 and mousey()>240 then PERFORM CHECKLIST FOR NET SESSIONS     : only_if_exist_CHECKLIST = 1 : gosub MOSTRA_CHECKLIST
+      if mousex()<300 and mousex()>100 and mousey()<280 and mousey()>260 then PERFORM CHECKLIST FOR NET PLAYERS      : only_if_exist_CHECKLIST = 1 : gosub MOSTRA_CHECKLIST
+      empty checklist
+   endif
+
+until mouseclick()=2
+repeat : until mouseclick()<>2
+return
+
+MOSTRA_CHECKLIST:
+   do
+      if item_da_lista < 1 then item_da_lista=1
+      if item_da_lista > CHECKLIST QUANTITY() then item_da_lista=CHECKLIST QUANTITY()
+      cls
+      text 50, 50,  "Encontrado(s) " + str$(CHECKLIST QUANTITY())
+      if CHECKLIST QUANTITY() <> 0
+      rem only_if_exist_CHECKLIST <> 1
+         text 50, 90, "Item " + str$(item_da_lista) + " : " + CHECKLIST STRING$(item_da_lista)
+         if only_strings_CHECKLIST <> 1
+            text 50, 120, "CHECKLIST VALUE A : " + str$(CHECKLIST VALUE A(item_da_lista))
+            text 50, 140, "CHECKLIST VALUE B : " + str$(CHECKLIST VALUE B(item_da_lista))
+            text 50, 160, "CHECKLIST VALUE C : " + str$(CHECKLIST VALUE C(item_da_lista))
+            text 50, 180, "CHECKLIST VALUE D : " + str$(CHECKLIST VALUE D(item_da_lista))
+         endif
+      endif
+      if rightkey()=1  then inc item_da_lista : repeat : until rightkey()<>1 : goto MOSTRA_CHECKLIST
+      if leftkey()=1   then dec item_da_lista : repeat : until leftkey()<>1 : goto MOSTRA_CHECKLIST
+      if returnkey()=1 then repeat : until returnkey() <> 1 : return
+      if escapekey()=1 then repeat : until escapekey()<>1 : exit
+      if mouseclick()=2 then repeat : until mouseclick()<>2 : exit
+   loop
+return
+
+rem =====================================================================================
+ATIVA_MENU_SYNC:
+   if menu_sync=1
+      menu_sync=0
+   else
+      menu_sync=1
+      menu_formato_tela = 0
+   endif
+return
+SYNC_ON_OFF:
+   if SYNC_STATUS=1
+      sync off
+      SYNC_STATUS=0
+   else
+      sync on
+      SYNC_STATUS=1
+   endif
+return
+SYNC_RATE_DOWN:
+   dec SYNC_RATE_STATUS
+   if SYNC_RATE_STATUS<0 then SYNC_RATE_STATUS=0
+   SYNC RATE SYNC_RATE_STATUS
+return
+SYNC_RATE_UP:
+   inc SYNC_RATE_STATUS
+   if SYNC_RATE_STATUS>1000 then SYNC_RATE_STATUS=1000
+   SYNC RATE SYNC_RATE_STATUS
+return
+FAST_SYNC_ON_OFF:
+   rem No cubo: if FASTSYNC_STATUS = 1 FASTSYNC : else : SYNC : endif
+   if FASTSYNC_STATUS=1
+      FASTSYNC_STATUS=0
+   else
+      FASTSYNC_STATUS=1
+   endif
+return
+rem -------------------------------------------------------------------------------------
+TYPE_SCREEN_SYS:
+   if menu_formato_tela = 1
+      menu_formato_tela = 0
+   else
+      menu_sync = 0
+      menu_formato_tela = 1
+   endif
+return
+SET_WINDOW_ON_OFF:
+   if WINDOW_STATUS=1
+      configuracoes("salva","window","off")
+      set window off
+      WINDOW_STATUS=0
+   else
+      configuracoes("salva","window","on")
+      set window on
+      WINDOW_STATUS=1
+   endif
+return
+rem =====================================================================================
+INFO_SYS:
+   repeat
+      cls
+      text 50, 50, "TESTE DE INFORMAÇÕES DO SISTEMA"
+
+      if mousex()<300 and mousex()>100 and mousey()<120 and mousey()>100 : text 100,110, "(1). CAPACIDADES 3D" : else : text 100,110, "[1]. Capacidade 3d"  : endif
+      if mousex()<300 and mousex()>100 and mousey()<140 and mousey()>120 : text 100,130, "(2). AVAILABILITY'S" : else : text 100,130, "[2]. Availability's" : endif
+      if mousex()<300 and mousex()>100 and mousey()<160 and mousey()>140 : text 100,150, "(3). GERAIS"         : else : text 100,150, "[3]. Gerais" : endif
+      if mousex()<300 and mousex()>100 and mousey()<180 and mousey()>160 : text 100,170, "(4). MODOS VIDEO SUPORTADOS"  : else : text 100,170, "[4]. Modos video suportados" : endif
+
+      gosub COMUM_MENUS
+
+      if mouseclick()=1
+         repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+         if mousex()<300 and mousex()>100 and mousey()<120 and mousey()>100 then gosub TESTE_3D_CAPACIDADES
+         if mousex()<300 and mousex()>100 and mousey()<140 and mousey()>120 then gosub AVAILABILITYS_EXPRESS
+         if mousex()<300 and mousex()>100 and mousey()<160 and mousey()>140 then gosub GERAIS_INFO_SYS
+         if mousex()<300 and mousex()>100 and mousey()<180 and mousey()>160 then gosub DISPLAY_MODES_SYS
+      endif
+
+   until mouseclick()=2
+   repeat : until mouseclick()<>2
+return
+
+DISPLAY_MODES_SYS:
+   perform checklist for display modes
+   cls
+   text 10, 20, "perform checklist for display modes:"
+   text 10, 50, "[THE CURRENT SCREEN STATUS]"
+   text 10, 70, "TYPE:  "    + str$(screen type())
+   text 200, 70, "DEPTH:  "  + str$(screen depth())
+   text 10, 90, "HEIGHT:  "  + str$(screen height())
+   text 200, 90, "WIDTH:  " + str$(screen width())
+   text 10, 110, "FRAME RATE IS " + str$(screen fps())    + " FPS"
+   rem Exibe colunas com os modos disponiveis
+   h_item = 20 : w_item = text width(checklist string$(checklist quantity())) + 50 : itens_coluna = 50
+   cursorY=150 : cursorX=50 : count=0
+
+   h_coluna = itens_coluna * h_item
+   while h_coluna > screen height() - 250
+      dec itens_coluna
+      h_coluna = itens_coluna * h_item
+   endwhile
+
+   for t=1 to checklist quantity()
+      inc count
+      if count > itens_coluna
+         repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+         rem cls
+         inc cursorX, w_item
+         if cursorX > screen width() - 300
+            repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+            cls
+            cursorX=50
+         endif
+         count=1
+         cursorY=150
+      endif
+      inc cursorY, h_item
+      set cursor cursorX, cursorY
+      print t," ",checklist string$(t)
+   next t
+   count=0
+   repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+   empty checklist
+   return
+rem -----------------------------------------------------------------------
+GERAIS_INFO_SYS:
+   cls
+   text 50, 50, "TESTE DE INFORMAÇÕES GERAIS_INFO_SYS:"
+   text 50, 110, "Dispositivo de controle atual: " + control device name$()
+   repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+
+return
+rem -----------------------------------------------------------------------
+
+AVAILABILITYS_EXPRESS:
+
+cls
+print "O QUE TEM NO SISTEMA 1:"
+print
+print "ALPHABLENDING AVAILABLE         : Return ", ALPHABLENDING AVAILABLE()
+print "ALPHA AVAILABLE                 : Return ", ALPHA AVAILABLE()
+print "ALPHACOMPARISON AVAILABLE       : Return ", ALPHACOMPARISON AVAILABLE()
+print "ANISTROPICFILTERING AVAILABLE   : Return ", ANISTROPICFILTERING AVAILABLE()
+print "ANTIALIAS AVAILABLE             : Return ", ANTIALIAS AVAILABLE()
+print "BLITSYSTOLOCAL AVAILABLE        : Return ", BLITSYSTOLOCAL AVAILABLE()
+print "CALIBRATEGAMMA AVAILABLE        : Return ", CALIBRATEGAMMA AVAILABLE()
+print "CLIPANDSCALEPOINTS AVAILABLE    : Return ", CLIPANDSCALEPOINTS AVAILABLE()
+print "CLIPTLVERTS AVAILABLE           : Return ", CLIPTLVERTS AVAILABLE()
+print "COLORPERSPECTIVE AVAILABLE      : Return ", COLORPERSPECTIVE AVAILABLE()
+
+repeat : until mouseclick()=1 : repeat : until mouseclick()<>1 : cls
+print "O QUE TEM NO SISTEMA 2:"
+print
+print "COLORWRITEENABLE AVAILABLE   : Return ", COLORWRITEENABLE AVAILABLE()
+print "CUBEMAP AVAILABLE            : Return ", CUBEMAP AVAILABLE()
+print "CULLCCW AVAILABLE            : Return ", CULLCCW AVAILABLE()
+print "CULLCW AVAILABLE             : Return ", CULLCW AVAILABLE()
+print "GET DEVICE TYPE              : Return ", GET DEVICE TYPE()
+print "DITHER AVAILABLE             : Return ", DITHER AVAILABLE()
+print "FILTERING AVAILABLE          : Return ", FILTERING AVAILABLE()
+print "FOGRANGE AVAILABLE           : Return ", FOGRANGE AVAILABLE()
+print "FOGTABLE AVAILABLE           : Return ", FOGTABLE AVAILABLE()
+print "FOGVERTEX AVAILABLE          : Return ", FOGVERTEX AVAILABLE()
+print "FOG AVAILABLE                : Return ", FOG AVAILABLE()
+
+repeat : until mouseclick()=1 : repeat : until mouseclick()<>1 : cls
+print "O QUE TEM NO SISTEMA 3:"
+print
+print "FULLSCREENGAMMA AVAILABLE             : Return ", FULLSCREENGAMMA AVAILABLE()
+print "GET MAXIMUM LIGHTS                    : Return ", GET MAXIMUM LIGHTS()
+print "GET MAXIMUM PIXEL SHADER VALUE        : Return ", GET MAXIMUM PIXEL SHADER VALUE()
+print "GET MAXIMUM TEXTURE HEIGHT            : Return ", GET MAXIMUM TEXTURE HEIGHT()
+print "GET MAXIMUM TEXTURE WIDTH             : Return ", GET MAXIMUM TEXTURE WIDTH()
+print "GET MAXIMUM VERTEX SHADER CONSTANTS   : Return ", GET MAXIMUM VERTEX SHADER CONSTANTS()
+print "GET MAXIMUM VOLUME EXTENT             : Return ", GET MAXIMUM VOLUME EXTENT()
+print "MIPCUBEMAP AVAILABLE                  : Return ", MIPCUBEMAP AVAILABLE()
+print "MIPMAP AVAILABLE                      : Return ", MIPMAP AVAILABLE()
+print "MIPMAPLODBIAS AVAILABLE               : Return ", MIPMAPLODBIAS AVAILABLE()
+print "MIPMAPVOLUME AVAILABLE                : Return ", MIPMAPVOLUME AVAILABLE()
+
+repeat : until mouseclick()=1 : repeat : until mouseclick()<>1 : cls
+print "O QUE TEM NO SISTEMA 4:"
+print
+print "NONPOWTEXTURES AVAILABLE           : Return ", NONPOWTEXTURES AVAILABLE()
+print "PERSPECTIVETEXTURES AVAILABLE      : Return ", PERSPECTIVETEXTURES AVAILABLE()
+print "GET MAXIMUM PIXEL SHADER VERSION   : Return ", GET MAXIMUM PIXEL SHADER VERSION()
+print "PROJECTEDTEXTURES AVAILABLE        : Return ", PROJECTEDTEXTURES AVAILABLE()
+print "RENDERAFTERFLIP AVAILABLE          : Return ", RENDERAFTERFLIP AVAILABLE()
+print "RENDERWINDOWED AVAILABLE           : Return ", RENDERWINDOWED AVAILABLE()
+print "SEPERATETEXTUREMEMORIES AVAILABLE  : Return ", SEPERATETEXTUREMEMORIES AVAILABLE()
+print "ONLYSQUARETEXTURES AVAILABLE       : Return ", ONLYSQUARETEXTURES AVAILABLE()
+print "TNL AVAILABLE                      : Return ", TNL AVAILABLE()
+
+repeat : until mouseclick()=1 : repeat : until mouseclick()<>1 : cls
+print "O QUE TEM NO SISTEMA 5:"
+print
+print "TLVERTEXSYSTEMMEMORY AVAILABLE     : Return ", TLVERTEXSYSTEMMEMORY AVAILABLE()
+print "TLVERTEXVIDEOMEMORY AVAILABLE      : Return ", TLVERTEXVIDEOMEMORY AVAILABLE()
+print "NONLOCALVIDEOMEMORY AVAILABLE      : Return ", NONLOCALVIDEOMEMORY AVAILABLE()
+print "TEXTURESYSTEMMEMORY AVAILABLE      : Return ", TEXTURESYSTEMMEMORY AVAILABLE()
+print "TEXTUREVIDEOMEMORY AVAILABLE       : Return ", TEXTUREVIDEOMEMORY AVAILABLE()
+print "GET MAXIMUM VERTEX SHADER VERSION  : Return ", GET MAXIMUM VERTEX SHADER VERSION()
+print "VOLUMEMAP AVAILABLE                : Return ", VOLUMEMAP AVAILABLE()
+print "WBUFFER AVAILABLE                  : Return ", WBUFFER AVAILABLE()
+print "WFOG AVAILABLE                     : Return ", WFOG AVAILABLE()
+print "ZBUFFER AVAILABLE                  : Return ", ZBUFFER AVAILABLE()
+print "ZFOG AVAILABLE                     : Return ", ZFOG AVAILABLE()
+print
+print "Terminou."
+
+repeat : until mouseclick()=1 : repeat : until mouseclick()<>1 : return
+rem -----------------------------------------------------------------------
+TESTE_3D_CAPACIDADES:
+cls
+
+text 50, 50, "This program demonstrates detecting 3D f/x"
+text 50, 100, "Check for 3D Special Effects Availability"
+text 50, 115, "Listing capabilities..."
+
+if alphablending available()=0 then text 100,200, "GHOST OBJECT will work!"   : text 300,200, "alphablending available()=1": else : text 300,200, "alphablending available()=0"
+if filtering available()=1     then text 100,215, "Textures will look better!": text 300,215, "filtering available()=1"    : else : text 300,215, "filtering available()=0"
+if fog available()=1           then text 100,230, "FOG ON will work!"         : text 300,230, "fog available()=1"          : else : text 300,230, "fog available()=0"
+rem if 3dblit available()=1    then text 100,245, "2D commands will run fast during 3D rendering!": "3dblit available()=1"
+
+print "End Of List."
+repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+return
+rem =======================================================================
+ATIVA_CUBO:
+   if MOSTRA_CUBO=1
+      rem backdrop on
+      delete object num_obj_cub_1
+      MOSTRA_CUBO=0
+   else
+      Rotate Camera 340,30,0
+      backdrop off
+      repeat
+         inc numero_objeto
+      until object exist(numero_objeto)<>1
+      make object cube numero_objeto, 200.0
+      num_obj_cub_1 = numero_objeto
+      MOSTRA_CUBO=1
+      load bitmap "texturas\osc1.bmp", 1
+      get image 1, 0, 0, 256, 256
+      delete bitmap 1
+      texture object num_obj_cub_1, 1
+   endif
+return
+
+MOSTRA_CUBO:
+   gosub CONTROLA_CAMERA
+   rem Spin 3D Cube
+   r#=wrapvalue(r#+1.0)
+   rotate object num_obj_cub_1,r#,r#,0
+   if FASTSYNC_STATUS = 1
+      FASTSYNC
+      text 300,15, "FASTSYNC ON"
+   else
+      SYNC
+      text 300,15, "FASTSYNC OFF"
+   endif
+return
+
+SALVA_CONF_CAM:
+   Configuracoes("salva", "cpx", str$(cpx#))
+   Configuracoes("salva", "cpy", str$(cpy#))
+   Configuracoes("salva", "cpz", str$(cpz#))
+   Configuracoes("salva", "cax", str$(cax#))
+   Configuracoes("salva", "cay", str$(cay#))
+   Configuracoes("salva", "caz", str$(caz#))
+   print_info("Configuracoes da camera salvas. Click para continuar.")
+   repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+return
+
+SET_CAM_POS:
+   Rotate Camera cax#, cay#, caz#
+   Position camera cpx#, cpy#, cpz#
+return
+
+GET_CAM_POS:
+   CpX# = CAMERA POSITION Y()
+   CpY# = CAMERA POSITION X()
+   CpZ# = CAMERA POSITION Z()
+return
+
+GET_CAM_ANG:
+   cay# = CAMERA ANGLE Y()
+   cax# = CAMERA ANGLE X()
+   caz# = CAMERA ANGLE Z()
+return
+
+CONTROLA_CAMERA:
+   rem Controla camera
+   cax#=wrapvalue(cax#+mousemoveY()*0.2)
+   cay#=wrapvalue(cay#+mousemoveX()*0.2)
+   caz#=wrapvalue(caz#+mousemoveZ()*0.01)
+   Rotate Camera cax#, cay#, caz#
+
+   rem MUda posicao
+   if inkey$()="a" then cpx# = cpx# + 1.0
+   if inkey$()="d" then cpx# = cpx# - 1.0
+   if inkey$()="w" then cpy# = cpy# + 1.0
+   if inkey$()="s" then cpy# = cpy# - 1.0
+   if inkey$()="z" then cpz# = cpz# + 1.0
+   if inkey$()="x" then cpz# = cpz# - 1.0
+   Position camera cpx#, cpy#, cpz#
+
+   gosub INFO_SCREEN
+return
+
+INFO_SCREEN:
+   rem Mostra infos na tela
+   text screen width() - 100, screen height() - 230, "cay "+str$(int(cay#))
+   text screen width() - 100, screen height() - 215, "cax "+str$(int(cax#))
+   text screen width() - 100, screen height() - 200, "caz "+str$(int(caz#))
+
+   text screen width() - 100, screen height() - 290, "cpy "+str$(int(cpy#))
+   text screen width() - 100, screen height() - 275, "cpx "+str$(int(cpx#))
+   text screen width() - 100, screen height() - 260, "cpz "+str$(int(cpz#))
+   text 100,15, str$(screen fps()) + " FPS"
+return
+
+rem =======================================================================
+COMUM_MENUS:
+   info_input(SrXTxt, "mouse", "scancod")
+   if info$ <> "" then print_info( info$ )
+   set cursor  200,290
+   if MOSTRA_CUBO=1 then gosub MOSTRA_CUBO
+
+   SrXTxt = screen width()/2
+   SrXMax = SrXTxt + 100
+   SrXMin = SrXTxt - 100
+return
+rem =======================================================================
+
+FUNCTION SetVideoMode(mode, demo)
+   cls
+   erro$ = ""
+
+   width=checklist value a(mode)
+   height=checklist value b(mode)
+   depth=checklist value c(mode)
+   if check display mode(width,height,depth)
+      set display mode width,height,depth
+
+   Configuracoes("salva", "display_mode", str$(mode))
+   info$ = "Display mode configurado. " + str$(CHECKLIST VALUE A(mode)) + " x " + str$(CHECKLIST VALUE B(mode)) + " x " + str$(CHECKLIST VALUE C(mode))
+
+      if demo = 1
+         ink rgb(rnd(255),rnd(255),rnd(255)),1
+         make object cube 10,200.0 : backdrop off
+         repeat
+            cls
+            text 50,50,  "PLEASE PRESS LEFT MOUSE BUTTON (or right to quit)."
+            text 50,100, "SCREEN STATUS: " + str$(width) + " WIDTH BY " + str$(height) + " HEIGHT AND A DEPTH OF " + str$(depth)
+
+            r#=wrapvalue(r#+4.0)
+            rotate object 10,r#,r#,0
+            sync
+         until mouseclick()=1
+         delete object 10
+      endif
+   else
+      erro$ = "Modo nao suportado."
+      print erro$
+      repeat : until mouseclick()=1 : repeat : until mouseclick()<>1
+   endif
+
+ENDFUNCTION erro$
+
+function PrintX(mensagen1$, num_mensagens)
+   rem para tela de 600x800
+
+   rem Atualizando log das mensagens
+   inc num_mensagens
+   tabela_mensagens$(num_mensagens)= mensagen1$
+
+   rem Acertando posicao do cursor
+   rem pos_cur_X = 25
+   rem inc pos_cur_Y, num_mensagens*15
+
+   rem Criar para input
+
+   rem set cursor pos_cur_X, pos_cur_Y
+   cls
+   PrintTabela()
+endfunction num_mensagens
+
+function PrintTabela()
+   rem Imprimindo Mensagem
+   if num_mensagens > 20
+      for count_line=20 to 0 step -1
+         print "[", count_line, "] ", tabela_mensagens$(num_mensagens-count_line)
+      next count_line
+   else
+      for count_line=num_mensagens to 0 step -1
+         print "[", count_line, "] ", tabela_mensagens$(num_mensagens-count_line)
+      next count_line
+   endif
+endfunction
+
+function Configuracoes(operacao$, configuracao$, valor$)
+   indice = 0
+   if configuracao$ = "" then print "Erro: Parametro incorreto para funcao Configuracoes." : repeat : until mouseclick()=1 : repeat : until mouseclick()<>1 : goto FIN_FUNCAO_CONFIG
+   if configuracao$ = "display_mode" then indice = 3
+   if configuracao$ = "text_size"    then indice = 2
+   if configuracao$ = "text_font"    then indice = 1
+   if configuracao$ = "window"       then indice = 4
+   if configuracao$ = "cpx"          then indice = 5
+   if configuracao$ = "cpy"          then indice = 6
+   if configuracao$ = "cpz"          then indice = 7
+   if configuracao$ = "cax"          then indice = 8
+   if configuracao$ = "cay"          then indice = 9
+   if configuracao$ = "caz"          then indice = 10
+   if configuracao$ = "red"          then indice = 11
+   if configuracao$ = "green"        then indice = 12
+   if configuracao$ = "blue"         then indice = 13
+   if configuracao$ = "red_f"        then indice = 14
+   if configuracao$ = "green_f"      then indice = 15
+   if configuracao$ = "blue_f"       then indice = 16
+   if indice = 0 then  print "Erro: Parametro incorreto para funcao Configuracoes." : repeat : until mouseclick()=1 : repeat : until mouseclick()<>1 : goto FIN_FUNCAO_CONFIG
+
+   if operacao$ = "carrega" then goto CARREGA_CONFIG
+   if operacao$ = "salva"   then goto SALVA_CONFIG
+   if operacao$ = "" then print "Erro: Parametro incorreto para funcao Configuracoes." : repeat : until mouseclick()=1 : repeat : until mouseclick()<>1 : goto FIN_FUNCAO_CONFIG
+
+   CARREGA_CONFIG:
+      rem "Carregando as configurações: "
+      if file exist("config.game") <> 1
+         rem "Arquivo de configurações config.game não existe : definindo configs padrão ..."
+         text_font$ = "System"
+         config_table$(1) = text_font$
+
+         text_size = 12
+         config_table$(2) = str$(text_size)
+
+         screen_mode = 1
+         config_table$(3) = str$(display_mode)
+
+         config_table$(11) = str$(100)
+         config_table$(12) = str$(225)
+         config_table$(13) = str$(25)
+         config_table$(14) = str$(225)
+         config_table$(15) = str$(225)
+         config_table$(16) = str$(225)
+
+         save array "config.game", config_table$(0)
+         if file exist("config.game") <> 1 then print "Erro: Funcao Configuracoes: Arquivo nao pode ser criado."  : repeat : until mouseclick()=1 : repeat : until mouseclick()<>1 : goto FIN_FUNCAO_CONFIG
+      endif
+      rem "Arquivo config.game existe : carregando ..."
+      load array "config.game", config_table$(0)
+      rem Verificar se essas configurações são verdadeiras/existem [fazer] [vai depender das que chamam]
+      rem print "Aplicando valores nas variveis ..."
+      valor$ = config_table$(indice)
+      rem text_size  = int(val(valor$))  screen_mode = int(val(valor$))
+   goto FIN_FUNCAO_CONFIG
+
+   SALVA_CONFIG:
+      rem OBS: Salvar o array das configurações no final das rotinas de configurações.
+      rem print "Salvando configuracoes para o arquivo ..."
+      load array "config.game", config_table$(0)
+      config_table$(indice) = valor$
+      save array "config.game", config_table$(0)
+
+   FIN_FUNCAO_CONFIG:
+
+endfunction valor$
+
+function print_info(info$)
+
+   antiga_info$ = info$
+   WHILE text width (info$) > screen width() - 100
+      atual_info$ = nova_info$
+      nova_info$ = ""
+      for caractere = 1 to len(info$) - 1
+         nova_info$ = nova_info$ + mid$(info$, caractere)
+      next caractere
+      info$ = nova_info$
+   endWHILE
+
+   resto_info$ = ""
+   if len(antiga_info$) > len(info$)
+      for caractere = len(info$)+1 to len(antiga_info$)
+         resto_info$ = resto_info$ + mid$(antiga_info$, caractere)
+      next caractere
+   endif
+
+   text_y = screen height()-50
+
+   box 48, text_y, text width (info$) + 55, text_y + text height (info$) + text height (resto_info$), 255, 0 ,0 ,255
+
+   if info$ <> "" then text 50, text_y, info$
+   if resto_info$ <> "" then text 50, text_y + 15, resto_info$
+   if text width (resto_info$) > screen width() - 100 then error$ = "Segunda parte da string eh muito grande." : text 50, text_y + 30, error$
+   rem    sync
+
+endfunction error$
+
+function print_info_mouse(info$)
+   text_y = mousey() + 50
+   text_x = mousex() + 50
+
+   box text_x, text_y, text width (info$) + text_x, text height (info$) + text_y, 0, 255, 255, 0
+
+   if info$ <> "" then text text_x, text_y, info$
+   if text width (info$) > screen width() - text_x then erro("print_info_mouse(info$): String eh muito grande.")
+
+endfunction
+
+function info_input(SrXTxt, mouse$, scancod$)
+   center text SrXTxt,350, "[press: " + str$(scancode()) + "] " + "[Mouse: X " + str$(mouseX()) + " Y " + str$(mouseY()) + "]"
+endfunction
+
+function erro (erro_mensagem$)
+
+   text 20, screen height() - 45, erro_mensagem$
+   text 20, screen height() - 30, "Pressione qualquer tecla."
+   sync
+   repeat : until mouseclick()=2: repeat : until mouseclick()<>2
+
+endfunction
+
+remstart EXEMPLO DE SELECT QUE NÃO FUNCIONA !!!
+            select
+               case mousex() < lado_r_x and mousex() > u_l_c_x and mousey() < u_l_c_y+50 and mousey() > u_l_c_y
+                  print_info("Mouse click: pos 1")
+                  endcase
+               case mousex() < lado_r_x and mousex() > u_l_c_x and mousey() < u_l_c_y+100 and mousey() > u_l_c_y+50
+                  print_info("Mouse click: pos 2")
+                  endcase
+               case mousex() < lado_r_x and mousex() > u_l_c_x and mousey() < u_l_c_y+150 and mousey() > u_l_c_y+100
+                  print_info("Mouse click: pos 3")
+                  endcase
+               case default
+                  print_info("Mouse click: em nenhum")
+                  endcase
+            endselect
+remend
+
+rem =======================================================================
+
+
+FINAL:
+FIM:
+
+print_info("[PROGRAMA FINALIZADO COM SUCESSO]")
+
+repeat : until inkey$()<>"" or mouseclick()=2
+
+

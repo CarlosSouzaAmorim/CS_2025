@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<!-- saved from url=(0028)https://ss64.com/nt/for.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=768, initial-scale=1">
+<link rel="STYLESHEET" href="./For - Looping commands - Windows CMD - SS64.com_files/main.css" type="text/css">
+<title>For - Looping commands - Windows CMD - SS64.com</title>
+<link rel="preload" href="./For - Looping commands - Windows CMD - SS64.com_files/f.txt" as="script"><script src="./For - Looping commands - Windows CMD - SS64.com_files/osd.js.download"></script><script type="text/javascript" src="./For - Looping commands - Windows CMD - SS64.com_files/f.txt"></script><link rel="preload" href="./For - Looping commands - Windows CMD - SS64.com_files/f(1).txt" as="script"><script type="text/javascript" src="./For - Looping commands - Windows CMD - SS64.com_files/f(1).txt"></script><link rel="preload" href="https://pagead2.googlesyndication.com/pagead/js/r20190826/r20190131/show_ads_impl.js" as="script"></head><body><!-- #BeginLibraryItem "/Library/head_nt.lbi" --><div id="tnav"><ul>
+<li class="tbtn"><a href="https://ss64.com/"> ( &nbsp;SS64 &nbsp;)</a></li>
+<li class="tbtn"><a href="https://ss64.com/nt">CMD</a></li>
+<li class="tbtn"><a href="https://ss64.com/nt/syntax.html">Syntax</a></li>
+<li><div id="search"><form action="https://www.google.com/search" method="get">
+<input type="text" name="q" id="q" size="27" maxlength="255">
+<input class="submit" value="Search" id="btn" type="submit">
+<input type="hidden" name="sitesearch" value="ss64.com/nt/"></form></div></li>
+</ul></div><!-- #EndLibraryItem --><h1>FOR</h1> 
+<p>Conditionally perform a command several times. </p>
+<pre> syntax-<a href="https://ss64.com/nt/for2.html">FOR-Files</a>
+       FOR %%parameter IN (<i>set</i>) DO <i>command</i> 
+   
+ syntax-<a href="https://ss64.com/nt/for_r.html">FOR-Files-Rooted at Path</a>   
+       FOR <b>/R </b>[[drive:]path] %%parameter IN (<i>set</i>) DO <i>command</i> 
+   
+ syntax-<a href="https://ss64.com/nt/for_d.html">FOR-Folders</a>
+       FOR <b>/D</b> %%parameter IN (<i>folder_set</i>) DO <i>command</i> 
+   
+ syntax-<a href="https://ss64.com/nt/for_l.html">FOR-List of numbers</a>   
+       FOR <b>/L</b> %%parameter IN (start,step,end) DO <i>command</i> 
+   
+ syntax-<a href="https://ss64.com/nt/for_f.html">FOR-File contents</a>   
+       FOR <b>/F</b> ["options"] %%parameter IN (filenameset) DO <i>command</i> 
+   
+       FOR <b>/F </b>["options"] %%parameter IN ("Text string to process") DO <i>command</i>
+   
+ syntax-<a href="https://ss64.com/nt/for_cmd.html">FOR-Command Results</a> 
+       FOR <b>/F</b> ["options"] %%parameter IN ('command to process') DO <i>command</i></pre>
+<p>The operation of the FOR command can be summarised as... </p>
+<ul>
+<li>Take a set of data</li>
+<li>Make a FOR Parameter <span class="code">%%G</span> equal to some part of that data</li>
+<li>Perform a command (optionally using the parameter as part of the command).</li>
+<li>Repeat for each item of data</li>
+</ul>
+<p> If you are using the FOR command at the command line rather than in a batch program,  use just one percent sign: <span class="code">%G</span> instead of <span class="code">%%G</span><b>.</b></p>
+<h2> FOR Parameters</h2>
+<blockquote>
+<p> The first parameter  has to be defined using a single character, for example the letter G.<br>
+<br>
+<span class="code">FOR %%G IN ...</span><br>
+<br>
+In each iteration of a FOR loop, the<span class="code"> IN ( ....)</span> clause is evaluated and %%G set to a different value<br>
+<br>
+If this clause results in a single value then %%G is set equal to that value and the command is performed.<br>
+<br>
+If the clause results in a multiple values then extra parameters are implicitly defined to hold each. These are automatically assigned in alphabetical order <span class="code">%%H %%I %%J ...</span>(implicit parameter definition)</p>
+<p>If the parameter refers to a  file, then <a href="https://ss64.com/nt/syntax-args.html">enhanced variable reference</a> can be used to  extract the filename/path/date/size.</p>
+<p>You can of course pick any letter of the alphabet other than %%G. <br>
+<br>
+<span class="code">%%G</span> is a good choice because it does not conflict with any of the pathname <a href="https://ss64.com/nt/syntax-args.html">format letters</a> (a, d, f, n, p, s, t, x) and provides the longest run of non-conflicting letters for use as implicit parameters.<br>
+G &gt; H &gt; I &gt; J &gt; K &gt; L &gt; M<br>
+Format letters are case sensitive, so using a capital letter is also a good way to avoid conflicts <span class="code">%%A</span> rather than <span class="code">%%a</span>. </p>
+</blockquote>
+<p><b>Examples</b></p>
+<p class="code">FOR /F "tokens=1-5" %%A IN ("This is a short sentence") DO @echo %%A %%B %%D</p>
+<p> will result in the output: <span class="code">This is short</span></p>
+<p>Create a set of 26 folders, one for each letter of the alphabet: </p>
+<p class="code">FOR %%G IN (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z) DO (md C:\demo\%%G)</p>
+<h2><a id="variables"></a>Using variables within a FOR loop </h2>
+<blockquote>
+<p> Variables are expanded at the start of a FOR loop and don’t update until the entire DO section has completed. <br>
+The following example  counts  the files in the current folder, but %count% always returns 1: </p>
+<p class="code">@echo off<br>
+SET count=1 <br>
+&nbsp;FOR /f "tokens=*" %%G IN ('dir /b') DO <b>(</b><br>   
+&nbsp;echo %count%:%%G<br>   
+&nbsp;set /a count+=1 <b>)</b></p>
+<p>To update variables within each iteration of the loop we must either use <a href="https://ss64.com/nt/setlocal.html">EnableDelayedExpansion</a> or else  use the <a href="https://ss64.com/nt/call.html">CALL :subroutine</a> mechanism as shown below:</p>
+<p class="code">@echo off<br>
+SET count=1<br>
+FOR /f "tokens=*" %%G IN ('dir /b') DO <b>(</b>call :subroutine "%%G"<b>)</b><br>
+GOTO :eof<br> 
+<br>
+:subroutine<br>  
+&nbsp;echo %count%:%1<br>  
+&nbsp;set /a count+=1<br>
+&nbsp;GOTO :eof</p>
+</blockquote>
+<h2>Nested FOR commands</h2>
+<blockquote>
+<p> FOR commands can be nested <span class="code">FOR %%G... DO (for %%U... do ...) </span><br>
+when nesting commands choose a different letter for each part. you can then 
+refer to both parameters in the final DO command.</p>
+<p>For an example of exiting the inner loop of two nested FOR loops, see the <a href="https://ss64.com/nt/exit.html">EXIT</a> page.<br>
+<br>
+If <a href="https://ss64.com/nt/cmd.html">Command Extensions</a> are disabled, the FOR command will 
+only support the basic syntax with no enhanced variables:<br>
+FOR %%parameter IN (set) DO command [command-parameters] </p>
+</blockquote>
+<h2>Errorlevels</h2>
+<blockquote>
+<p>The FOR command does not generally set any <a href="https://ss64.com/nt/errorlevel.html">errorlevels</a>, leaving that to the <i>command</i> being called. <br>
+One exception is  using a wildcard, if the wildcard does not match any files, then FOR will return %ERRORLEVEL% = 5</p>
+</blockquote>
+<p>FOR does not, by itself, set or clear the <a href="https://ss64.com/nt/errorlevel.html">Errorlevel</a>.<br>
+FOR is an <a href="https://ss64.com/nt/syntax-internal.html">internal</a> command.<br>
+  <br>
+  <i class="quote">“Those who cannot remember the past are condemned to repeat it” - George Santayana </i><br>
+  <br>
+  <b>Related:</b><br>
+  <br>
+  <span class="space"><a href="https://ss64.com/nt/for2.html">FOR</a> - Loop through a set of files in one folder.<br>
+  <a href="https://ss64.com/nt/for_r.html">FOR /R</a> - Loop through files (recurse subfolders) <a href="https://ss64.com/nt/for_d.html">.<br>
+  FOR /D</a> - Loop through several folders.<br>
+  <a href="https://ss64.com/nt/for_l.html">FOR /L</a> - Loop through a range of numbers.<br>
+  <a href="https://ss64.com/nt/for_f.html">FOR /F</a> - Loop through items in a text file.<br>
+  <a href="https://ss64.com/nt/for_cmd.html">FOR /F</a> - Loop through the output of a command.<br>
+  <a href="https://ss64.com/nt/syntax-args.html">Parameters/arguments</a> %~ options.<br>
+  <a href="https://ss64.com/nt/forfiles.html">FORFILES</a> - Batch process multiple files.<br>
+  <a href="https://ss64.com/nt/goto.html">GOTO</a> - Direct a batch program to jump to a labelled line.<br>
+  <a href="https://ss64.com/nt/if.html">IF</a> - Conditionally perform a command .<br>
+  Powershell:  <a href="https://ss64.com/ps/foreach-object.html">ForEach-Object</a> - Loop for each object in the pipeline.<br>
+  Equivalent bash command (Linux): <a href="https://ss64.com/bash/awk.html">awk</a> or <a href="https://ss64.com/bash/for.html">for var in [list]; do</a> - Expand <var>list</var>, and execute <var>commands</var>.</span></p><!-- #BeginLibraryItem "/Library/foot_nt.lbi" --><p><!-- windows300 -->
+<script async="" src="./For - Looping commands - Windows CMD - SS64.com_files/f(2).txt"></script>
+<ins class="adsbygoogle" style="display: inline-block; width: 300px; height: 250px;" data-ad-client="ca-pub-6140977852749469" data-ad-slot="7649547908" data-adsbygoogle-status="done"><ins id="aswift_0_expand" style="display:inline-table;border:none;height:250px;margin:0;padding:0;position:relative;visibility:visible;width:300px;background-color:transparent;"><ins id="aswift_0_anchor" style="display:block;border:none;height:250px;margin:0;padding:0;position:relative;visibility:visible;width:300px;background-color:transparent;"><iframe width="300" height="250" frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_0" name="aswift_0" style="left:0;position:absolute;top:0;border:0px;width:300px;height:250px;" src="./For - Looping commands - Windows CMD - SS64.com_files/saved_resource.html"></iframe></ins></ins></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script></p>
+<hr>
+<div id="bl">&nbsp;</div>
+<div id="br">Copyright © <a href="https://ss64.com/">SS64.com</a> 1999-2019<br>
+Some rights reserved</div><!-- #EndLibraryItem -->
+
+<ins class="adsbygoogle adsbygoogle-noablate" data-adsbygoogle-status="done" style="display: none !important;"><ins id="aswift_1_expand" style="display:inline-table;border:none;height:0px;margin:0;padding:0;position:relative;visibility:visible;width:0px;background-color:transparent;"><ins id="aswift_1_anchor" style="display:block;border:none;height:0px;margin:0;padding:0;position:relative;visibility:visible;width:0px;background-color:transparent;"><iframe frameborder="0" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_1" name="aswift_1" style="left:0;position:absolute;top:0;border:0px;width:0px;height:0px;" src="./For - Looping commands - Windows CMD - SS64.com_files/saved_resource(1).html"></iframe></ins></ins></ins><iframe id="google_osd_static_frame_6859185696707" name="google_osd_static_frame" style="display: none; width: 0px; height: 0px;" src="./For - Looping commands - Windows CMD - SS64.com_files/saved_resource(2).html"></iframe></body><iframe id="google_shimpl" style="display: none;" src="./For - Looping commands - Windows CMD - SS64.com_files/saved_resource(3).html"></iframe><iframe id="google_esf" name="google_esf" src="./For - Looping commands - Windows CMD - SS64.com_files/zrt_lookup.html" data-ad-client="ca-pub-6140977852749469" style="display: none;"></iframe></html>
