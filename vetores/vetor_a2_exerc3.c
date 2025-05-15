@@ -13,7 +13,7 @@ char *I_memset(char *vetor, char caractere, int posicoes){
         vetor[i]=caractere;
     }
 
-    return 0;
+    return vetor;
 
 }
 
@@ -22,11 +22,12 @@ char *I_memcpy(char *vetor_destino, char *vetor_origem, int posicoes){
         vetor_destino[i]=vetor_origem[i];
     }
 
-    return 0;
+    return vetor_destino;
 
 }
 int *I_memcmp(char *vetor_destino, char *vetor_origem, int posicoes){
     for (int i=0; i<posicoes; i++){
+        //testa cada posicao do vetor, se for diferente, sair da funcao e retornar falso
         if (vetor_destino[i]!=vetor_origem[i]){
             return 0;
         };
@@ -51,7 +52,7 @@ int main (int argc, char *argv[])
     char letras_2 [DIMENSAO_1] = {'g', 'e', 'l', 'a', 'd', 'o', 'n','a','o'};
 
     puts("Vetores originais:");
-    // mostra(argv[1], DIMENSAO_1);
+    // mostra(argv[1], DIMENSAO_1); //pegar o vetor do argv com tamanho sizeof(argv[1]) nao funciona
     // mostra(argv[2], DIMENSAO_1);
     mostra(letras_1, DIMENSAO_1);
     mostra(letras_2, DIMENSAO_1);
@@ -60,10 +61,29 @@ int main (int argc, char *argv[])
     I_memcpy(letras_1,letras_2, 2);
 
     puts("Vetores alterados:");
-    // mostra(letras_1, DIMENSAO_1);
-    // mostra(letras_2, DIMENSAO_1);
+    mostra(letras_1, DIMENSAO_1);
+    mostra(letras_2, DIMENSAO_1);
+
+    putchar('\n');
+    puts("Compara os vetores:");
+    if (I_memcmp(letras_1,letras_2, 2)){
+        puts("as strings sao iguais");
+    }
+    else{
+        puts("as strings sao diferentes");
+
+    };
+    putchar('\n');
+    
+    I_memcpy(letras_2,letras_1, 2);
+
+    puts("Vetores alterados (copia):");
+    mostra(letras_1, DIMENSAO_1);
+    mostra(letras_2, DIMENSAO_1);
     putchar('\n');
 
+
+    puts("Compara os vetores:");
     if (I_memcmp(letras_1,letras_2, 2)){
         puts("as strings sao iguais");
     }
