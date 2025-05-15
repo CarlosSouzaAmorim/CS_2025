@@ -79,15 +79,34 @@ int main (int argc, char *argv[])
     // mostra(argv[2], DIMENSAO_1);
     mostra(letras_1, DIMENSAO_1);
     mostra(letras_2, DIMENSAO_1);
-    putchar('\n');
+    puts("\n---------------------\n");
 
     I_memcpy(letras_1,letras_2, 2);
 
-    puts("Vetores alterados:");
+    puts("Vetores alterados (copia 2 primeiros char):");
     mostra(letras_1, DIMENSAO_1);
     mostra(letras_2, DIMENSAO_1);
 
+    puts("\n---------------------\n");
+
+    puts("Compara os vetores (interios):");
+    if (I_memcmp(letras_1,letras_2, DIMENSAO_1)){
+        puts("as strings sao iguais");
+    }
+    else{
+        puts("as strings sao diferentes");
+    };
+
+    puts("\n---------------------\n");
+    
+    I_memcpy(letras_2,letras_1, DIMENSAO_1);
+
+    puts("Vetores alterados (copia vetores inteiros):");
+    mostra(letras_1, DIMENSAO_1);
+    mostra(letras_2, DIMENSAO_1);
     putchar('\n');
+
+
     puts("Compara os vetores:");
     if (I_memcmp(letras_1,letras_2, DIMENSAO_1)){
         puts("as strings sao iguais");
@@ -95,23 +114,8 @@ int main (int argc, char *argv[])
     else{
         puts("as strings sao diferentes");
     };
-    putchar('\n');
-    
-    I_memcpy(letras_2,letras_1, 2);
 
-    puts("Vetores alterados (copia ):");
-    mostra(letras_1, DIMENSAO_1);
-    mostra(letras_2, DIMENSAO_1);
-    putchar('\n');
-
-
-    puts("Compara os vetores:");
-    if (I_memcmp(letras_1,letras_2, 2)){
-        puts("as strings sao iguais");
-    }
-    else{
-        puts("as strings sao diferentes");
-    };
+    puts("\n---------------------\n");
 
     memset(letras_1, 'p', 2);
     memset(letras_2, 'P', 2);
@@ -119,8 +123,8 @@ int main (int argc, char *argv[])
     puts("Vetores alterados (p e P):");
     mostra(letras_1, DIMENSAO_1);
     mostra(letras_2, DIMENSAO_1);
-    putchar('\n');
 
+    putchar('\n');
 
     puts("Compara os vetores case insensitive:");
     if (I_memicmp(letras_1,letras_2, 2)){
@@ -130,6 +134,8 @@ int main (int argc, char *argv[])
         puts("as strings sao diferentes");
     };
 
+    puts("\n---------------------\n");
+    putchar('\n');
 
     printf ("\n\nFim!\n\n");
     
