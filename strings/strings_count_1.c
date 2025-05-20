@@ -1,28 +1,46 @@
 #include <stdio.h>
 
+#define LEN_DEF 30
 
-
-int strcount(char *s)/*string count digit*/
-{
-for (i=conta=)0; s[i] != '\0'; i++)
-    if (s[i] == 'ch')//se for o caracter procurado
-        conta++;
-    // else if (s[i] == '\n')
-    //     conta++;
-    // else if (s[i] == '\t')
-    //     conta++;
-    // else if (s[i] == '\v')
-    //     conta++;
-    // else if (s[i] == '\f')
-    //     conta++;
-    // else if (s[i] == '\r')
-    conta++;
-    return conta;
-}
+// int strcount(char *s)/*string count digit*/
+// {
+// for (i=conta=)0; s[i] != '\0'; i++)
+//     if (s[i] == 'ch')//se for o caracter procurado
+//         conta++;
+//     // else if (s[i] == '\n')
+//     //     conta++;
+//     // else if (s[i] == '\t')
+//     //     conta++;
+//     // else if (s[i] == '\v')
+//     //     conta++;
+//     // else if (s[i] == '\f')
+//     //     conta++;
+//     // else if (s[i] == '\r')
+//     conta++;
+//     return conta;
+// }
 
 /* 
 
 */
+int strcount(char *s)/*string count digit*/
+{
+    int i, conta=0;
+    for (i=0; s[i] != '\0'; i++)
+        if (s[i] == 'ch')//se for o caracter procurado
+            conta++;
+        // else if (s[i] == '\n')
+        //     conta++;
+        // else if (s[i] == '\t')
+        //     conta++;
+        // else if (s[i] == '\v')
+        //     conta++;
+        // else if (s[i] == '\f')
+        //     conta++;
+        // else if (s[i] == '\r')
+        conta++;
+    return conta;
+}
 
 //10 string compare
 int strcomp(char *s1, char *s2)
