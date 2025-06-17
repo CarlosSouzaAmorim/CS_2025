@@ -11,7 +11,7 @@ amaro
  */
 #define STR_LEN 50
 
-char *strchr(char *string_test, char caractere){
+char *strchr1(char *string_test, char caractere){
 
     while (*string_test){
         if (*string_test == caractere){ return string_test;}
@@ -26,7 +26,17 @@ int main(){
     char caractere_para_testar;
     char *char_resultado;
 
-    printf("Escreva uma string até %d",STR_LEN);
+    printf("Escreva uma string de até %d",STR_LEN);
+    fgets(string_para_testar, STR_LEN, stdin);
+    printf("Escreva um caractere: ");
+    scanf(" %c", &caractere_para_testar);   
+
+    char_resultado = strchr1(string_para_testar, caractere_para_testar);
+    if (char_resultado != NULL) {
+        printf("A partir do caractere '%c': %s", caractere_para_testar, char_resultado);
+    } else {
+        printf("Caractere '%c' não encontrado na string.\n", caractere_para_testar);
+    }
 
     return 0;
 }
